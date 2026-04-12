@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fonetyka – Trening do Kolokwium</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --accent: #e8ff47;
+    --accent2: #ff6b47;
+    --accent3: #47c8ff;
+    --text: #f0f0f0;
+    --muted: #888;
+    --correct: #4dff91;
+    --wrong: #ff4d6d;
+    --border: #333;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+  .score-badge {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN */
+  .main { max-width: 860px; margin: 0 auto; padding: 32px 20px; }
+
+  .task-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .task-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    opacity: 0.3;
+  }
+  .task-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .task-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* PANEL */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* TASK 1 – TRANSCRIPTION */
+  .transcription-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .transcription-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .transcription-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .transcription-table tr:hover td { background: var(--surface2); }
+  .no-cell { color: var(--muted); font-size: 0.75rem; width: 30px; }
+  .spelling-cell { font-weight: 700; letter-spacing: 0.05em; width: 180px; }
+  .input-cell { width: 100%; }
+  .phon-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.88rem;
+    padding: 8px 12px;
+    width: 100%;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+  .phon-input:focus { outline: none; border-color: var(--accent); }
+  .phon-input.correct { border-color: var(--correct); background: #0d2e1a; }
+  .phon-input.wrong { border-color: var(--wrong); background: #2e0d15; }
+  .answer-hint {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    display: none;
+  }
+  .answer-hint.show { display: block; }
+  .answer-hint.correct { color: var(--correct); }
+  .answer-hint.wrong { color: var(--wrong); }
+
+  /* TASK 2 – STRESS */
+  .stress-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .stress-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stress-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    vertical-align: top;
+  }
+  .stress-table tr:hover td { background: var(--surface2); }
+  .syllables {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .syl-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .syl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .syl-btn.selected { background: var(--accent); color: #000; border-color: var(--accent); }
+  .syl-btn.correct-ans { background: var(--correct); color: #000; border-color: var(--correct); }
+  .syl-btn.wrong-ans { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+
+  /* TASK 3 – CIRCLE */
+  .circle-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .circle-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .circle-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  .circle-table tr:hover td { background: var(--surface2); }
+  .option-btn {
+    display: inline-block;
+    padding: 7px 16px;
+    margin: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .option-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+  .option-btn.selected { background: var(--accent3); color: #000; border-color: var(--accent3); }
+  .option-btn.correct-ans { background: var(--correct); color: #000; border-color: var(--correct); }
+  .option-btn.wrong-ans { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+
+  /* TASK 4 – SPELLING */
+  .spelling-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .spelling-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .spelling-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .spelling-table tr:hover td { background: var(--surface2); }
+  .ipa-cell {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: var(--accent3);
+    font-weight: 700;
+    width: 220px;
+  }
+  .spell-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    width: 100%;
+    border-radius: 2px;
+    text-transform: lowercase;
+    transition: border-color 0.2s;
+  }
+  .spell-input:focus { outline: none; border-color: var(--accent3); }
+  .spell-input.correct { border-color: var(--correct); background: #0d2e1a; }
+  .spell-input.wrong { border-color: var(--wrong); background: #2e0d15; }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 28px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    border: none;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #d4e830; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* RESULT */
+  .result-box {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+    display: none;
+  }
+  .result-box.show { display: block; }
+  .result-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .result-score .pts { color: var(--accent); }
+  .result-msg { font-size: 0.82rem; color: var(--muted); }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 28px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    border-radius: 2px;
+  }
+
+  /* SHUFFLE badge */
+  .badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-left: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header { padding: 14px 16px; }
+    .main { padding: 20px 12px; }
+    .task-num { font-size: 2rem; }
+    .spelling-cell { width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ FONETYKA — TRENING KOLOKWIUM</h1>
+  <span class="score-badge" id="globalScore">0 / 0 pkt</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)">1. TRANSKRYPCJA</button>
+  <button class="tab" onclick="switchTab(1)">2. AKCENT</button>
+  <button class="tab" onclick="switchTab(2)">3. WYBÓR TRANSKRYPCJI</button>
+  <button class="tab" onclick="switchTab(3)">4. ORTOGRAFIA</button>
+</div>
+
+<div class="main">
+
+<!-- ===== PANEL 1: TRANSCRIPTION ===== -->
+<div class="panel active" id="panel-0">
+  <div class="task-header">
+    <div class="task-num">1</div>
+    <div>
+      <div class="task-title">Transcribe the following words</div>
+      <div class="task-desc">Wpisz transkrypcję IPA — bez ukośników. Np: ˈbɜːtn lub po prostu: /ˈbɜːtn/</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog1" style="width:0%"></div></div>
+  <table class="transcription-table">
+    <thead><tr><th>NO</th><th>SPELLING</th><th>TRANSCRIPTION</th><th></th></tr></thead>
+    <tbody id="t1-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask1()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask1()">↺ NOWE SŁOWA</button>
+    <button class="btn btn-secondary" onclick="revealTask1()">👁 POKAŻ ODPOWIEDZI</button>
+  </div>
+  <div class="result-box" id="res1"></div>
+</div>
+
+<!-- ===== PANEL 2: STRESS ===== -->
+<div class="panel" id="panel-1">
+  <div class="task-header">
+    <div class="task-num">2</div>
+    <div>
+      <div class="task-title">Mark the stress in the following words</div>
+      <div class="task-desc">Kliknij sylabę, na której pada akcent główny (ˈ)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog2" style="width:0%"></div></div>
+  <table class="stress-table">
+    <thead><tr><th>NO</th><th>WORD</th><th>KLIKNIJ AKCENTOWANĄ SYLABĘ</th></tr></thead>
+    <tbody id="t2-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask2()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask2()">↺ NOWE SŁOWA</button>
+  </div>
+  <div class="result-box" id="res2"></div>
+</div>
+
+<!-- ===== PANEL 3: CIRCLE ===== -->
+<div class="panel" id="panel-2">
+  <div class="task-header">
+    <div class="task-num">3</div>
+    <div>
+      <div class="task-title">Circle the correct transcription</div>
+      <div class="task-desc">Wybierz poprawną transkrypcję IPA spośród trzech opcji</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog3" style="width:0%"></div></div>
+  <table class="circle-table">
+    <thead><tr><th>NO</th><th>SPELLING</th><th>A</th><th>B</th><th>C</th></tr></thead>
+    <tbody id="t3-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask3()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask3()">↺ NOWE SŁOWA</button>
+  </div>
+  <div class="result-box" id="res3"></div>
+</div>
+
+<!-- ===== PANEL 4: SPELLING ===== -->
+<div class="panel" id="panel-3">
+  <div class="task-header">
+    <div class="task-num">4</div>
+    <div>
+      <div class="task-title">Write the following words in spelling</div>
+      <div class="task-desc">Patrząc na transkrypcję IPA — napisz słowo po angielsku</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog4" style="width:0%"></div></div>
+  <table class="spelling-table">
+    <thead><tr><th>NO</th><th>TRANSCRIPTION</th><th>SPELLING</th></tr></thead>
+    <tbody id="t4-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask4()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask4()">↺ NOWE SŁOWA</button>
+    <button class="btn btn-secondary" onclick="revealTask4()">👁 POKAŻ ODPOWIEDZI</button>
+  </div>
+  <div class="result-box" id="res4"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ===================== DATA =====================
+const wordBank = [
+  {w:"Leonard", ipa:"ˈlenəd"}, {w:"Greenwich", ipa:"ˈɡrenɪtʃ"}, {w:"cleanliness", ipa:"ˈklenlɪnəs"},
+  {w:"neon", ipa:"ˈniːɒn"}, {w:"cohesive", ipa:"kəʊˈhiːsɪv"}, {w:"bugle", ipa:"ˈbjuːɡl"},
+  {w:"shove", ipa:"ʃʌv"}, {w:"hearth", ipa:"hɑːθ"}, {w:"Derby", ipa:"ˈdɑːbi"},
+  {w:"mausoleum", ipa:"ˌmɒsəˈliːəm"}, {w:"almond", ipa:"ˈɑːmənd"}, {w:"amiable", ipa:"ˈeɪmɪəbl"},
+  {w:"handkerchief", ipa:"ˈhæŋkətʃɪf"}, {w:"jury", ipa:"ˈdʒʊəri"}, {w:"cholera", ipa:"ˈkɒlərə"},
+  {w:"colonel", ipa:"ˈkɜːnl"}, {w:"knowledge", ipa:"ˈnɒlɪdʒ"}, {w:"salmon", ipa:"ˈsæmən"},
+  {w:"Wednesday", ipa:"ˈwenzdi"}, {w:"Leicester", ipa:"ˈlestə"}, {w:"subtle", ipa:"ˈsʌtl"},
+  {w:"sword", ipa:"sɔːd"}, {w:"tomb", ipa:"tuːm"}, {w:"receipt", ipa:"rɪˈsiːt"},
+  {w:"Thames", ipa:"temz"}, {w:"rhythm", ipa:"ˈrɪðəm"}, {w:"borough", ipa:"ˈbʌrə"},
+  {w:"stomach", ipa:"ˈstʌmək"}, {w:"muscle", ipa:"ˈmʌsl"}, {w:"island", ipa:"ˈaɪlənd"},
+  {w:"aunt", ipa:"ɑːnt"}, {w:"monk", ipa:"mʌŋk"}, {w:"glove", ipa:"ɡlʌv"},
+  {w:"bury", ipa:"ˈberi"}, {w:"plait", ipa:"plæt"}, {w:"quay", ipa:"kiː"},
+  {w:"height", ipa:"haɪt"}, {w:"dough", ipa:"dəʊ"}, {w:"comb", ipa:"kəʊm"},
+  {w:"hymn", ipa:"hɪm"}, {w:"blood", ipa:"blʌd"}, {w:"flood", ipa:"flʌd"},
+  {w:"yolk", ipa:"jəʊk"}, {w:"folk", ipa:"fəʊk"}, {w:"palm", ipa:"pɑːm"},
+  {w:"calm", ipa:"kɑːm"}, {w:"half", ipa:"hɑːf"}, {w:"calf", ipa:"kɑːf"},
+  {w:"choir", ipa:"ˈkwaɪə"}, {w:"chaos", ipa:"ˈkeɪɒs"}, {w:"chef", ipa:"ʃef"},
+  {w:"champagne", ipa:"ʃæmˈpeɪn"}, {w:"chandelier", ipa:"ˌʃændəˈlɪə"}, {w:"psyche", ipa:"ˈsaɪki"},
+  {w:"gauge", ipa:"ɡeɪdʒ"}, {w:"aisle", ipa:"aɪl"}, {w:"heir", ipa:"eə"},
+];
+
+// Stress data: word, syllables array, correct index (0-based)
+const stressBank = [
+  {w:"characterize", syls:["cha","rac","te","rize"], ans:0},
+  {w:"satire", syls:["sa","tire"], ans:0},
+  {w:"therefore", syls:["there","fore"], ans:0},
+  {w:"infamous", syls:["in","fa","mous"], ans:0},
+  {w:"arithmetic (n.)", syls:["a","rith","me","tic"], ans:1},
+  {w:"admirable", syls:["ad","mi","ra","ble"], ans:0},
+  {w:"adversary", syls:["ad","ver","sa","ry"], ans:0},
+  {w:"arbitrary", syls:["ar","bi","tra","ry"], ans:0},
+  {w:"ceremony", syls:["cer","e","mo","ny"], ans:0},
+  {w:"comfortable", syls:["com","for","ta","ble"], ans:0},
+  {w:"demonstrate", syls:["dem","on","strate"], ans:0},
+  {w:"economy", syls:["e","con","o","my"], ans:1},
+  {w:"geography", syls:["ge","og","ra","phy"], ans:1},
+  {w:"geometry", syls:["ge","om","e","try"], ans:1},
+  {w:"industry", syls:["in","dus","try"], ans:0},
+  {w:"inventory", syls:["in","ven","to","ry"], ans:0},
+  {w:"necessary", syls:["nec","es","sa","ry"], ans:0},
+  {w:"veterinary", syls:["vet","er","i","na","ry"], ans:0},
+  {w:"university", syls:["u","ni","ver","si","ty"], ans:2},
+  {w:"international", syls:["in","ter","na","tion","al"], ans:2},
+  {w:"metropolitan", syls:["met","ro","pol","i","tan"], ans:2},
+  {w:"photography", syls:["pho","tog","ra","phy"], ans:1},
+  {w:"biology", syls:["bi","ol","o","gy"], ans:1},
+  {w:"analysis", syls:["a","nal","y","sis"], ans:1},
+  {w:"catastrophe", syls:["ca","tas","tro","phe"], ans:1},
+];
+
+// For task 3, generate distractors from wordBank
+function makeCircleItem(item) {
+  const correct = item.ipa;
+  // Generate 2 plausible wrong transcriptions
+  const distractors = generateDistractors(item.w, correct);
+  const opts = shuffle([correct, distractors[0], distractors[1]]);
+  return { w: item.w, opts, ans: opts.indexOf(correct) };
+}
+
+function generateDistractors(word, ipa) {
+  // Pick 2 random IPAs from wordBank that are not the same
+  const pool = wordBank.filter(x => x.ipa !== ipa);
+  const picked = shuffle(pool).slice(0,2).map(x => x.ipa);
+  return picked;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function pick(arr, n) { return shuffle(arr).slice(0, n); }
+
+// ===================== STATE =====================
+let t1Items=[], t2Items=[], t3Items=[], t4Items=[];
+let scores = {t1:0,t2:0,t3:0,t4:0};
+let checked = {t1:false,t2:false,t3:false,t4:false};
+
+// ===================== INIT =====================
+function initTask1() {
+  t1Items = pick(wordBank, 10);
+  const tbody = document.getElementById('t1-body');
+  tbody.innerHTML = '';
+  t1Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="no-cell">${i+1}.</td>
+      <td class="spelling-cell">${item.w.toUpperCase()}</td>
+      <td class="input-cell">
+        <input class="phon-input" id="t1i${i}" type="text" placeholder="/" autocomplete="off" spellcheck="false">
+        <div class="answer-hint" id="t1h${i}"></div>
+      </td>`;
+    tbody.appendChild(tr);
+    document.getElementById(`t1i${i}`).addEventListener('input', () => updateProg1());
+  });
+  document.getElementById('prog1').style.width = '0%';
+  const rb = document.getElementById('res1');
+  rb.classList.remove('show');
+  checked.t1 = false;
+}
+
+function initTask2() {
+  t2Items = pick(stressBank, 8);
+  const tbody = document.getElementById('t2-body');
+  tbody.innerHTML = '';
+  t2Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    const sylsHtml = item.syls.map((s,j) =>
+      `<button class="syl-btn" id="t2s${i}_${j}" onclick="selectSyl(${i},${j})">${s.toUpperCase()}</button>`
+    ).join('');
+    tr.innerHTML = `
+      <td class="no-cell" style="width:30px">${i+1}.</td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;width:200px">${item.w.toUpperCase()}</td>
+      <td><div class="syllables">${sylsHtml}</div></td>`;
+    tbody.appendChild(tr);
+  });
+  t2Items._selected = new Array(t2Items.length).fill(null);
+  document.getElementById('prog2').style.width = '0%';
+  document.getElementById('res2').classList.remove('show');
+  checked.t2 = false;
+}
+
+function initTask3() {
+  const pool = pick(wordBank, 8);
+  t3Items = pool.map(makeCircleItem);
+  const tbody = document.getElementById('t3-body');
+  tbody.innerHTML = '';
+  t3Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    const optsHtml = item.opts.map((o,j) =>
+      `<button class="option-btn" id="t3o${i}_${j}" onclick="selectOpt(${i},${j})">/${o}/</button>`
+    ).join('');
+    tr.innerHTML = `
+      <td class="no-cell">${i+1}.</td>
+      <td style="font-weight:700;font-family:'Syne',sans-serif;">${item.w.toUpperCase()}</td>
+      ${item.opts.map((o,j) => `<td><button class="option-btn" id="t3o${i}_${j}" onclick="selectOpt(${i},${j})">/${o}/</button></td>`).join('')}`;
+    tbody.appendChild(tr);
+  });
+  t3Items._selected = new Array(t3Items.length).fill(null);
+  document.getElementById('prog3').style.width = '0%';
+  document.getElementById('res3').classList.remove('show');
+  checked.t3 = false;
+}
+
+function initTask4() {
+  t4Items = pick(wordBank, 8);
+  const tbody = document.getElementById('t4-body');
+  tbody.innerHTML = '';
+  t4Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="no-cell">${i+1}.</td>
+      <td class="ipa-cell">/${item.ipa}/</td>
+      <td><input class="spell-input" id="t4i${i}" type="text" placeholder="write the word..." autocomplete="off" spellcheck="false">
+      <div class="answer-hint" id="t4h${i}"></div></td>`;
+    tbody.appendChild(tr);
+    document.getElementById(`t4i${i}`).addEventListener('input', () => updateProg4());
+  });
+  document.getElementById('prog4').style.width = '0%';
+  document.getElementById('res4').classList.remove('show');
+  checked.t4 = false;
+}
+
+// ===================== INTERACTIONS =====================
+function selectSyl(row, col) {
+  if (checked.t2) return;
+  t2Items._selected[row] = col;
+  t2Items[row].syls.forEach((_,j) => {
+    const btn = document.getElementById(`t2s${row}_${j}`);
+    btn.classList.toggle('selected', j===col);
+  });
+  updateProg2();
+}
+
+function selectOpt(row, col) {
+  if (checked.t3) return;
+  t3Items._selected[row] = col;
+  t3Items[row].opts.forEach((_,j) => {
+    const btn = document.getElementById(`t3o${row}_${j}`);
+    btn.classList.toggle('selected', j===col);
+  });
+  updateProg3();
+}
+
+// ===================== PROGRESS =====================
+function updateProg1() {
+  const filled = t1Items.filter((_,i) => document.getElementById(`t1i${i}`).value.trim()).length;
+  document.getElementById('prog1').style.width = (filled/t1Items.length*100)+'%';
+}
+function updateProg2() {
+  const filled = t2Items._selected.filter(x=>x!==null).length;
+  document.getElementById('prog2').style.width = (filled/t2Items.length*100)+'%';
+}
+function updateProg3() {
+  const filled = t3Items._selected.filter(x=>x!==null).length;
+  document.getElementById('prog3').style.width = (filled/t3Items.length*100)+'%';
+}
+function updateProg4() {
+  const filled = t4Items.filter((_,i) => document.getElementById(`t4i${i}`).value.trim()).length;
+  document.getElementById('prog4').style.width = (filled/t4Items.length*100)+'%';
+}
+
+// ===================== CHECK =====================
+function normalize(s) { return s.replace(/[\/ˈˌ\s]/g,'').toLowerCase(); }
+
+function checkTask1() {
+  let correct = 0;
+  t1Items.forEach((item,i) => {
+    const inp = document.getElementById(`t1i${i}`);
+    const hint = document.getElementById(`t1h${i}`);
+    const val = normalize(inp.value);
+    const ans = normalize(item.ipa);
+    if (val === ans) {
+      inp.classList.add('correct'); inp.classList.remove('wrong');
+      hint.className='answer-hint correct show'; hint.textContent='✓ Poprawnie!';
+      correct++;
+    } else {
+      inp.classList.add('wrong'); inp.classList.remove('correct');
+      hint.className='answer-hint wrong show'; hint.textContent=`✗ Poprawna: /${item.ipa}/`;
+    }
+  });
+  showResult('res1', correct, t1Items.length);
+  checked.t1 = true;
+  document.getElementById('prog1').style.width='100%';
+}
+
+function checkTask2() {
+  let correct = 0;
+  t2Items.forEach((item,i) => {
+    const sel = t2Items._selected[i];
+    item.syls.forEach((_,j) => {
+      const btn = document.getElementById(`t2s${i}_${j}`);
+      btn.classList.remove('selected','correct-ans','wrong-ans');
+      if (j === item.ans) btn.classList.add('correct-ans');
+      else if (j === sel && sel !== item.ans) btn.classList.add('wrong-ans');
+    });
+    if (sel === item.ans) correct++;
+  });
+  showResult('res2', correct, t2Items.length);
+  checked.t2 = true;
+}
+
+function checkTask3() {
+  let correct = 0;
+  t3Items.forEach((item,i) => {
+    const sel = t3Items._selected[i];
+    item.opts.forEach((_,j) => {
+      const btn = document.getElementById(`t3o${i}_${j}`);
+      btn.classList.remove('selected','correct-ans','wrong-ans');
+      if (j === item.ans) btn.classList.add('correct-ans');
+      else if (j === sel && sel !== item.ans) btn.classList.add('wrong-ans');
+    });
+    if (sel === item.ans) correct++;
+  });
+  showResult('res3', correct, t3Items.length);
+  checked.t3 = true;
+}
+
+function checkTask4() {
+  let correct = 0;
+  t4Items.forEach((item,i) => {
+    const inp = document.getElementById(`t4i${i}`);
+    const hint = document.getElementById(`t4h${i}`);
+    const val = inp.value.trim().toLowerCase();
+    const ans = item.w.toLowerCase();
+    if (val === ans) {
+      inp.classList.add('correct'); inp.classList.remove('wrong');
+      hint.className='answer-hint correct show'; hint.textContent='✓ Poprawnie!';
+      correct++;
+    } else {
+      inp.classList.add('wrong'); inp.classList.remove('correct');
+      hint.className='answer-hint wrong show'; hint.textContent=`✗ Poprawna: ${item.w}`;
+    }
+  });
+  showResult('res4', correct, t4Items.length);
+  checked.t4 = true;
+  document.getElementById('prog4').style.width='100%';
+}
+
+function revealTask1() {
+  t1Items.forEach((item,i) => {
+    const inp = document.getElementById(`t1i${i}`);
+    const hint = document.getElementById(`t1h${i}`);
+    inp.value = '/'+item.ipa+'/';
+    inp.classList.add('correct'); inp.classList.remove('wrong');
+    hint.className='answer-hint correct show'; hint.textContent='(pokazana odpowiedź)';
+  });
+}
+
+function revealTask4() {
+  t4Items.forEach((item,i) => {
+    const inp = document.getElementById(`t4i${i}`);
+    const hint = document.getElementById(`t4h${i}`);
+    inp.value = item.w;
+    inp.classList.add('correct'); inp.classList.remove('wrong');
+    hint.className='answer-hint correct show'; hint.textContent='(pokazana odpowiedź)';
+  });
+}
+
+function showResult(id, correct, total) {
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  const pct = Math.round(correct/total*100);
+  let grade, color;
+  if (pct >= 90) { grade="5 — Świetnie! 🎉"; color="var(--correct)"; }
+  else if (pct >= 75) { grade="4 — Dobrze! 👍"; color="var(--accent)"; }
+  else if (pct >= 60) { grade="3 — Wystarczy ✓"; color="var(--accent3)"; }
+  else { grade="2 — Ćwicz więcej 💪"; color="var(--accent2)"; }
+  el.innerHTML = `
+    <div class="result-score"><span class="pts" style="color:${color}">${correct}/${total} pkt</span> &nbsp;${pct}%</div>
+    <div class="result-msg">${grade}</div>`;
+  updateGlobalScore();
+}
+
+function updateGlobalScore() {
+  // not tracking across panels in this version – just show last
+}
+
+// ===================== RESET =====================
+function resetTask1() { initTask1(); }
+function resetTask2() { initTask2(); }
+function resetTask3() { initTask3(); }
+function resetTask4() { initTask4(); }
+
+// ===================== TABS =====================
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n));
+}
+
+// ===================== BOOT =====================
+initTask1(); initTask2(); initTask3(); initTask4();
+</script>
+</body>
+</html>
