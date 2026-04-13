@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fonetyka – Trening do Kolokwium</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --accent: #e8ff47;
+    --accent2: #ff6b47;
+    --accent3: #47c8ff;
+    --text: #f0f0f0;
+    --muted: #888;
+    --correct: #4dff91;
+    --wrong: #ff4d6d;
+    --border: #333;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+  .score-badge {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN */
+  .main { max-width: 860px; margin: 0 auto; padding: 32px 20px; }
+
+  .task-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .task-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    opacity: 0.3;
+  }
+  .task-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .task-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* PANEL */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* TASK 1 – TRANSCRIPTION */
+  .transcription-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .transcription-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .transcription-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .transcription-table tr:hover td { background: var(--surface2); }
+  .no-cell { color: var(--muted); font-size: 0.75rem; width: 30px; }
+  .spelling-cell { font-weight: 700; letter-spacing: 0.05em; width: 180px; }
+  .input-cell { width: 100%; }
+  .phon-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.88rem;
+    padding: 8px 12px;
+    width: 100%;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+  .phon-input:focus { outline: none; border-color: var(--accent); }
+  .phon-input.correct { border-color: var(--correct); background: #0d2e1a; }
+  .phon-input.wrong { border-color: var(--wrong); background: #2e0d15; }
+  .answer-hint {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    display: none;
+  }
+  .answer-hint.show { display: block; }
+  .answer-hint.correct { color: var(--correct); }
+  .answer-hint.wrong { color: var(--wrong); }
+
+  /* IPA KEYBOARD */
+  .ipa-keyboard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .ipa-keyboard.visible { display: block; }
+  .ipa-kb-title {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ipa-kb-title span { color: var(--accent); font-weight: 700; }
+  .ipa-section {
+    margin-bottom: 8px;
+  }
+  .ipa-section-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  .ipa-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+  .ipa-key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    padding: 7px 10px;
+    min-width: 38px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.1s;
+    line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .ipa-key:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+  .ipa-key:active { transform: scale(0.92); }
+  .ipa-key.stress-key { color: var(--accent2); border-color: var(--accent2); }
+  .ipa-key.stress-key:hover { background: var(--accent2); color: #fff; }
+  .ipa-key.length-key { color: var(--accent3); border-color: var(--accent3); }
+  .ipa-key.length-key:hover { background: var(--accent3); color: #000; }
+  .ipa-key.del-key { color: var(--wrong); border-color: var(--wrong); min-width: 52px; font-size: 0.75rem; }
+  .ipa-key.del-key:hover { background: var(--wrong); color: #fff; }
+  .kb-toggle-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 5px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-bottom: 12px;
+    transition: all 0.15s;
+  }
+  .kb-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .kb-toggle-btn.on { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.07); }
+
+  /* TASK 2 – STRESS */
+  .stress-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .stress-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stress-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    vertical-align: top;
+  }
+  .stress-table tr:hover td { background: var(--surface2); }
+  .syllables {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .syl-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .syl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .syl-btn.selected { background: var(--accent); color: #000; border-color: var(--accent); }
+  .syl-btn.correct-ans { background: var(--correct); color: #000; border-color: var(--correct); }
+  .syl-btn.wrong-ans { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+
+  /* TASK 3 – CIRCLE */
+  .circle-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .circle-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .circle-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  .circle-table tr:hover td { background: var(--surface2); }
+  .option-btn {
+    display: inline-block;
+    padding: 7px 16px;
+    margin: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .option-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+  .option-btn.selected { background: var(--accent3); color: #000; border-color: var(--accent3); }
+  .option-btn.correct-ans { background: var(--correct); color: #000; border-color: var(--correct); }
+  .option-btn.wrong-ans { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+
+  /* TASK 4 – SPELLING */
+  .spelling-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .spelling-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .spelling-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .spelling-table tr:hover td { background: var(--surface2); }
+  .ipa-cell {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: var(--accent3);
+    font-weight: 700;
+    width: 220px;
+  }
+  .spell-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    width: 100%;
+    border-radius: 2px;
+    text-transform: lowercase;
+    transition: border-color 0.2s;
+  }
+  .spell-input:focus { outline: none; border-color: var(--accent3); }
+  .spell-input.correct { border-color: var(--correct); background: #0d2e1a; }
+  .spell-input.wrong { border-color: var(--wrong); background: #2e0d15; }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 28px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    border: none;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #d4e830; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* RESULT */
+  .result-box {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+    display: none;
+  }
+  .result-box.show { display: block; }
+  .result-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .result-score .pts { color: var(--accent); }
+  .result-msg { font-size: 0.82rem; color: var(--muted); }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 28px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    border-radius: 2px;
+  }
+
+  /* SHUFFLE badge */
+  .badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-left: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header { padding: 14px 16px; }
+    .main { padding: 20px 12px; }
+    .task-num { font-size: 2rem; }
+    .spelling-cell { width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ FONETYKA — TRENING KOLOKWIUM</h1>
+  <span class="score-badge" id="globalScore">0 / 0 pkt</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)">1. TRANSKRYPCJA</button>
+  <button class="tab" onclick="switchTab(1)">2. AKCENT</button>
+  <button class="tab" onclick="switchTab(2)">3. WYBÓR TRANSKRYPCJI</button>
+  <button class="tab" onclick="switchTab(3)">4. ORTOGRAFIA</button>
+</div>
+
+<div class="main">
+
+<!-- ===== PANEL 1: TRANSCRIPTION ===== -->
+<div class="panel active" id="panel-0">
+  <div class="task-header">
+    <div class="task-num">1</div>
+    <div>
+      <div class="task-title">Transcribe the following words</div>
+      <div class="task-desc">Wpisz transkrypcję IPA — bez ukośników. Np: ˈbɜːtn lub po prostu: /ˈbɜːtn/</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog1" style="width:0%"></div></div>
+
+  <button class="kb-toggle-btn" id="kb-toggle" onclick="toggleKeyboard()">⌨ POKAŻ KLAWIATURĘ IPA</button>
+
+  <div class="ipa-keyboard" id="ipa-keyboard">
+    <div class="ipa-kb-title">
+      KLAWIATURA IPA — kliknij pole tekstowe, potem symbol
+      <span id="kb-active-label">brak aktywnego pola</span>
+    </div>
+
+    <div class="ipa-section">
+      <div class="ipa-section-label">Samogłoski krótkie</div>
+      <div class="ipa-row">
+        <button class="ipa-key" onclick="insertIPA('ɪ')">ɪ</button>
+        <button class="ipa-key" onclick="insertIPA('ʊ')">ʊ</button>
+        <button class="ipa-key" onclick="insertIPA('e')">e</button>
+        <button class="ipa-key" onclick="insertIPA('ə')">ə</button>
+        <button class="ipa-key" onclick="insertIPA('ɒ')">ɒ</button>
+        <button class="ipa-key" onclick="insertIPA('ʌ')">ʌ</button>
+        <button class="ipa-key" onclick="insertIPA('æ')">æ</button>
+        <button class="ipa-key" onclick="insertIPA('a')">a</button>
+      </div>
+    </div>
+
+    <div class="ipa-section">
+      <div class="ipa-section-label">Samogłoski długie</div>
+      <div class="ipa-row">
+        <button class="ipa-key" onclick="insertIPA('iː')">iː</button>
+        <button class="ipa-key" onclick="insertIPA('uː')">uː</button>
+        <button class="ipa-key" onclick="insertIPA('ɑː')">ɑː</button>
+        <button class="ipa-key" onclick="insertIPA('ɔː')">ɔː</button>
+        <button class="ipa-key" onclick="insertIPA('ɜː')">ɜː</button>
+      </div>
+    </div>
+
+    <div class="ipa-section">
+      <div class="ipa-section-label">Dyftongi</div>
+      <div class="ipa-row">
+        <button class="ipa-key" onclick="insertIPA('eɪ')">eɪ</button>
+        <button class="ipa-key" onclick="insertIPA('aɪ')">aɪ</button>
+        <button class="ipa-key" onclick="insertIPA('ɔɪ')">ɔɪ</button>
+        <button class="ipa-key" onclick="insertIPA('əʊ')">əʊ</button>
+        <button class="ipa-key" onclick="insertIPA('aʊ')">aʊ</button>
+        <button class="ipa-key" onclick="insertIPA('ɪə')">ɪə</button>
+        <button class="ipa-key" onclick="insertIPA('eə')">eə</button>
+        <button class="ipa-key" onclick="insertIPA('ʊə')">ʊə</button>
+      </div>
+    </div>
+
+    <div class="ipa-section">
+      <div class="ipa-section-label">Spółgłoski specjalne</div>
+      <div class="ipa-row">
+        <button class="ipa-key" onclick="insertIPA('θ')">θ</button>
+        <button class="ipa-key" onclick="insertIPA('ð')">ð</button>
+        <button class="ipa-key" onclick="insertIPA('ʃ')">ʃ</button>
+        <button class="ipa-key" onclick="insertIPA('ʒ')">ʒ</button>
+        <button class="ipa-key" onclick="insertIPA('tʃ')">tʃ</button>
+        <button class="ipa-key" onclick="insertIPA('dʒ')">dʒ</button>
+        <button class="ipa-key" onclick="insertIPA('ŋ')">ŋ</button>
+        <button class="ipa-key" onclick="insertIPA('j')">j</button>
+        <button class="ipa-key" onclick="insertIPA('w')">w</button>
+        <button class="ipa-key" onclick="insertIPA('r')">r</button>
+      </div>
+    </div>
+
+    <div class="ipa-section">
+      <div class="ipa-section-label">Akcent i długość</div>
+      <div class="ipa-row">
+        <button class="ipa-key stress-key" onclick="insertIPA('ˈ')">ˈ &nbsp;główny</button>
+        <button class="ipa-key stress-key" onclick="insertIPA('ˌ')">ˌ &nbsp;poboczny</button>
+        <button class="ipa-key length-key" onclick="insertIPA('ː')">ː &nbsp;długość</button>
+        <button class="ipa-key del-key" onclick="deleteIPA()">⌫ DEL</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="transcription-table">
+    <thead><tr><th>NO</th><th>SPELLING</th><th>TRANSCRIPTION</th><th></th></tr></thead>
+    <tbody id="t1-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask1()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask1()">↺ NOWE SŁOWA</button>
+    <button class="btn btn-secondary" onclick="revealTask1()">👁 POKAŻ ODPOWIEDZI</button>
+  </div>
+  <div class="result-box" id="res1"></div>
+</div>
+
+<!-- ===== PANEL 2: STRESS ===== -->
+<div class="panel" id="panel-1">
+  <div class="task-header">
+    <div class="task-num">2</div>
+    <div>
+      <div class="task-title">Mark the stress in the following words</div>
+      <div class="task-desc">Kliknij sylabę, na której pada akcent główny (ˈ)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog2" style="width:0%"></div></div>
+  <table class="stress-table">
+    <thead><tr><th>NO</th><th>WORD</th><th>KLIKNIJ AKCENTOWANĄ SYLABĘ</th></tr></thead>
+    <tbody id="t2-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask2()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask2()">↺ NOWE SŁOWA</button>
+  </div>
+  <div class="result-box" id="res2"></div>
+</div>
+
+<!-- ===== PANEL 3: CIRCLE ===== -->
+<div class="panel" id="panel-2">
+  <div class="task-header">
+    <div class="task-num">3</div>
+    <div>
+      <div class="task-title">Circle the correct transcription</div>
+      <div class="task-desc">Wybierz poprawną transkrypcję IPA spośród trzech opcji</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog3" style="width:0%"></div></div>
+  <table class="circle-table">
+    <thead><tr><th>NO</th><th>SPELLING</th><th>A</th><th>B</th><th>C</th></tr></thead>
+    <tbody id="t3-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask3()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask3()">↺ NOWE SŁOWA</button>
+  </div>
+  <div class="result-box" id="res3"></div>
+</div>
+
+<!-- ===== PANEL 4: SPELLING ===== -->
+<div class="panel" id="panel-3">
+  <div class="task-header">
+    <div class="task-num">4</div>
+    <div>
+      <div class="task-title">Write the following words in spelling</div>
+      <div class="task-desc">Patrząc na transkrypcję IPA — napisz słowo po angielsku</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog4" style="width:0%"></div></div>
+  <table class="spelling-table">
+    <thead><tr><th>NO</th><th>TRANSCRIPTION</th><th>SPELLING</th></tr></thead>
+    <tbody id="t4-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkTask4()">✓ SPRAWDŹ</button>
+    <button class="btn btn-secondary" onclick="resetTask4()">↺ NOWE SŁOWA</button>
+    <button class="btn btn-secondary" onclick="revealTask4()">👁 POKAŻ ODPOWIEDZI</button>
+  </div>
+  <div class="result-box" id="res4"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ===================== DATA =====================
+// Each entry: w=spelling, ipa=correct, d=two misleading distractors (based on Sobkowiak's Error column)
+// COMPLETE list from Sobkowiak (1996) - all 6 pages
+const wordBank = [
+  // A
+  {w:"abdomen",        ipa:"ˈæbdəmən",         d:["əbˈdəʊmən",      "ˈæbdɒmən"]},
+  {w:"abominable",     ipa:"əˈbɒmɪnəbl",       d:["əˈbɒmɪneɪbl",    "əˈbɒmɪnɪbl"]},
+  {w:"above",          ipa:"əˈbʌv",             d:["əˈbəʊv",          "əˈbɒv"]},
+  {w:"Abraham",        ipa:"ˈeɪbrəhæm",         d:["ˈæbrəhæm",        "ˈeɪbrəhəm"]},
+  {w:"abroad",         ipa:"əˈbrɔːd",           d:["əˈbrəʊd",         "əˈbrɒd"]},
+  {w:"absurd",         ipa:"əbˈsɜːd",           d:["ˈæbsəd",          "əbˈsɜːrd"]},
+  {w:"accurate",       ipa:"ˈækjʊrət",          d:["ˈækjʊreɪt",       "ˈækjərɪt"]},
+  {w:"ache",           ipa:"eɪk",               d:["eɪtʃ",            "æk"]},
+  {w:"acknowledge",    ipa:"əkˈnɒlɪdʒ",         d:["əkˈnəʊlɪdʒ",      "ˈæknɒlɪdʒ"]},
+  {w:"adequacy",       ipa:"ˈædɪkwəsi",         d:["əˈdɒkwəsi",       "ˈeɪdɪkwəsi"]},
+  {w:"administrative", ipa:"ədˈmɪnɪstrətɪv",    d:["ædmɪˈnɪstrətɪv",  "ədˈmɪnɪstreɪtɪv"]},
+  {w:"admirable",      ipa:"ˈædmərəbl",         d:["ədˈmaɪərəbl",     "ˈædmɪrəbl"]},
+  {w:"advantage",      ipa:"ədˈvɑːntɪdʒ",       d:["ədˈvɑːnteɪdʒ",    "ˈædvɑːntɪdʒ"]},
+  {w:"adversary",      ipa:"ˈædvəsəri",         d:["ədˈvɜːsəri",      "ˈædvɜːsəri"]},
+  {w:"advice",         ipa:"ədˈvaɪs",           d:["ˈædvaɪs",         "ədˈveɪs"]},
+  {w:"aircraft",       ipa:"ˈeəkrɑːft",         d:["ˈeɪkrɑːft",       "ˈeəkræft"]},
+  {w:"aisle",          ipa:"aɪl",               d:["eɪl",             "aɪsl"]},
+  {w:"Albert",         ipa:"ˈælbət",            d:["ˈɒlbɜːt",         "ˈælbɜːt"]},
+  {w:"album",          ipa:"ˈælbəm",            d:["ˈɒlbəm",          "ˈeɪlbəm"]},
+  {w:"alcove",         ipa:"ˈælkəʊv",           d:["ˈɒlkəʊv",         "ˈeɪlkəʊv"]},
+  {w:"Alfred",         ipa:"ˈælfrɪd",           d:["ˈɒlfrəd",         "ˈeɪlfrɪd"]},
+  {w:"algebra",        ipa:"ˈældʒɪbrə",         d:["ˈɒldʒɪbrə",       "ˈeɪldʒɪbrə"]},
+  {w:"alibi",          ipa:"ˈælɪbaɪ",           d:["ˈælɪbi",          "ˈeɪlɪbaɪ"]},
+  {w:"Alice",          ipa:"ˈælɪs",             d:["əˈliːs",          "ˈeɪlɪs"]},
+  {w:"almond",         ipa:"ˈɑːmənd",           d:["ˈɒlmənd",         "ˈælmənd"]},
+  {w:"alphabet",       ipa:"ˈælfəbɪt",          d:["ˈɒlfəbɪt",        "ˈeɪlfəbɪt"]},
+  {w:"amiable",        ipa:"ˈeɪmɪəbl",          d:["ˈæmɪəbl",         "əˈmaɪəbl"]},
+  {w:"among",          ipa:"əˈmʌŋ",             d:["əˈmɒŋ",           "ˈæmʌŋ"]},
+  {w:"anatomy",        ipa:"əˈnætəmi",          d:["ˈænətəmi",        "əˈneɪtəmi"]},
+  {w:"ancient",        ipa:"ˈeɪnʃənt",          d:["ˈænʃənt",         "ˈeɪntʃənt"]},
+  {w:"anecdote",       ipa:"ˈænɪkdəʊt",         d:["ˈænəɡdəʊt",       "ˈænɪkdɒt"]},
+  {w:"angel",          ipa:"ˈeɪndʒl",           d:["ˈændʒəl",         "ˈeɪndʒəl"]},
+  {w:"answer",         ipa:"ˈɑːnsə",            d:["ˈɑːnswə",         "ˈænsə"]},
+  {w:"Anthony",        ipa:"ˈæntəni",           d:["ˈænθəni",         "ˈæntɒni"]},
+  {w:"any",            ipa:"ˈeni",              d:["ˈæni",            "ˈeɪni"]},
+  {w:"appalling",      ipa:"əˈpɔːlɪŋ",          d:["ˈæpəlɪŋ",         "əˈpælɪŋ"]},
+  {w:"appendix",       ipa:"əˈpendɪks",         d:["ˈæpəndɪks",       "əˈpɛndɪks"]},
+  {w:"April",          ipa:"ˈeɪprəl",           d:["ˈæprɪl",          "ˈeɪprɪl"]},
+  {w:"arbitrary",      ipa:"ˈɑːbɪtrəri",        d:["ˌɑːbɪˈtræri",     "ˈɑːbɪtreɪri"]},
+  {w:"area",           ipa:"ˈeərɪə",            d:["əˈrɪə",           "ˈeɪrɪə"]},
+  {w:"aren't",         ipa:"ɑːnt",              d:["ˈɑːrənt",         "ɑːrnt"]},
+  {w:"arena",          ipa:"əˈriːnə",           d:["əˈrenə",          "ˈærɪnə"]},
+  {w:"arithmetic (n)", ipa:"əˈrɪθmətɪk",        d:["ˌærɪθˈmetɪk",     "əˈrɪθmɪtɪk"]},
+  {w:"atom",           ipa:"ˈætəm",             d:["ˈeɪtəm",          "ˈɑːtəm"]},
+  {w:"attentive",      ipa:"əˈtentɪv",          d:["ˈætəntɪv",        "əˈtɛntɪv"]},
+  {w:"attorney",       ipa:"əˈtɜːni",           d:["əˈtɔːni",         "ˈætɜːni"]},
+  {w:"auction",        ipa:"ˈɔːkʃn",            d:["ˈəʊkʃn",          "ˈɒkʃn"]},
+  {w:"aunt",           ipa:"ɑːnt",              d:["aʊnt",            "ænt"]},
+  {w:"author",         ipa:"ˈɔːθə",             d:["ˈəʊθə",           "ˈɑːθə"]},
+  {w:"automobile",     ipa:"ˈɔːtəməbiːl",       d:["ˈəʊtəməbaɪl",     "ˈɔːtəmɒbaɪl"]},
+  {w:"autumn",         ipa:"ˈɔːtəm",            d:["ˈəʊtəm",          "ˈɒtəm"]},
+  {w:"available",      ipa:"əˈveɪləbl",         d:["ˌæveɪˈleɪbl",     "əˈvæləbl"]},
+  {w:"average",        ipa:"ˈævərɪdʒ",          d:["ˈævəreɪdʒ",       "ˈeɪvərɪdʒ"]},
+  {w:"awful",          ipa:"ˈɔːfʊl",            d:["ˈəʊfʊl",          "ˈɑːfʊl"]},
+  // B
+  {w:"balcony",        ipa:"ˈbælkəni",          d:["ˈbɒlkəni",        "ˈbeɪlkəni"]},
+  {w:"balsam",         ipa:"ˈbɔːlsəm",          d:["ˈbælsəm",         "ˈbɑːlsəm"]},
+  {w:"basic",          ipa:"ˈbeɪsɪk",           d:["ˈbeɪzɪk",         "ˈbæsɪk"]},
+  {w:"basis",          ipa:"ˈbeɪsɪs",           d:["ˈbæsɪs",          "ˈbeɪzɪs"]},
+  {w:"bass",           ipa:"beɪs",              d:["bæs",             "bɑːs"]},
+  {w:"bather",         ipa:"ˈbeɪðə",            d:["ˈbæðə",           "ˈbɑːðə"]},
+  {w:"bathtub",        ipa:"ˈbɑːθtʌb",          d:["ˈbɑːθtjʊb",       "ˈbæθtʌb"]},
+  {w:"because",        ipa:"bɪˈkɒz",            d:["bɪˈkəʊz",         "bɪˈkeɪz"]},
+  {w:"Berkshire",      ipa:"ˈbɑːkʃə",           d:["ˈbɜːkʃaɪə",       "ˈbɑːkʃɪə"]},
+  {w:"bigamy",         ipa:"ˈbɪɡəmi",           d:["ˈbɪdʒəmi",        "ˈbaɪɡəmi"]},
+  {w:"biscuit",        ipa:"ˈbɪskɪt",           d:["ˈbɪskwɪt",        "ˈbɪskɪtʃ"]},
+  {w:"blood",          ipa:"blʌd",              d:["bluːd",           "blɒd"]},
+  {w:"body",           ipa:"ˈbɒdi",             d:["ˈbəʊdi",          "ˈbʌdi"]},
+  {w:"bomb",           ipa:"bɒm",               d:["bɒmb",            "bʌm"]},
+  {w:"bondage",        ipa:"ˈbɒndɪdʒ",          d:["ˈbɒndeɪdʒ",       "ˈbɒndɪʒ"]},
+  {w:"borough",        ipa:"ˈbʌrə",             d:["ˈbɒrəʊ",          "ˈbʌrəʊ"]},
+  {w:"bosom",          ipa:"ˈbʊzəm",            d:["ˈbɒsəm",          "ˈbuːzəm"]},
+  {w:"bough",          ipa:"baʊ",               d:["bəʊ",             "bɔː"]},
+  {w:"bow (bend)",     ipa:"baʊ",               d:["bəʊ",             "bɔː"]},
+  {w:"bowl",           ipa:"bəʊl",              d:["baʊl",            "bɒl"]},
+  {w:"bravery",        ipa:"ˈbreɪvəri",         d:["ˈbrævəri",        "ˈbreɪvɪri"]},
+  {w:"breath",         ipa:"breθ",              d:["briːð",           "breð"]},
+  {w:"breathe",        ipa:"briːð",             d:["breθ",            "briːθ"]},
+  {w:"breeches",       ipa:"ˈbrɪtʃɪz",          d:["ˈbriːtʃɪz",       "ˈbreɪtʃɪz"]},
+  {w:"broad",          ipa:"brɔːd",             d:["brəʊd",           "brɒd"]},
+  {w:"brooch",         ipa:"brəʊtʃ",            d:["bruːtʃ",          "brɔːtʃ"]},
+  {w:"brother",        ipa:"ˈbrʌðə",            d:["ˈbrɒðə",          "ˈbrəʊðə"]},
+  {w:"brought",        ipa:"brɔːt",             d:["brəʊt",           "brɒt"]},
+  {w:"bugle",          ipa:"ˈbjuːɡl",           d:["ˈbʌɡl",           "ˈbjuːɡəl"]},
+  {w:"bull",           ipa:"bʊl",               d:["bʌl",             "buːl"]},
+  {w:"buoy",           ipa:"bɔɪ",               d:["bwɔɪ",            "buːɪ"]},
+  {w:"burial",         ipa:"ˈberɪəl",           d:["ˈbɜːrɪəl",        "ˈbʊrɪəl"]},
+  {w:"burn",           ipa:"bɜːn",              d:["bʌrn",            "bɔːn"]},
+  {w:"burst",          ipa:"bɜːst",             d:["bʌrst",           "bɔːst"]},
+  {w:"Burton",         ipa:"ˈbɜːtn",            d:["ˈbɑːtn",          "ˈbɜːtən"]},
+  {w:"bury",           ipa:"ˈberi",             d:["ˈbɜːri",          "ˈbʊri"]},
+  {w:"bustle",         ipa:"ˈbʌsl",             d:["ˈbʌstl",          "ˈbʌsəl"]},
+  {w:"butcher",        ipa:"ˈbʊtʃə",            d:["ˈbʌtʃə",          "ˈbuːtʃə"]},
+  // C
+  {w:"cabbage",        ipa:"ˈkæbɪdʒ",           d:["ˈkæbeɪdʒ",        "ˈkæbɪʒ"]},
+  {w:"cabin",          ipa:"ˈkæbɪn",            d:["ˈkeɪbɪn",         "ˈkæbɪən"]},
+  {w:"calf",           ipa:"kɑːf",              d:["kɑːlf",           "kælf"]},
+  {w:"calm",           ipa:"kɑːm",              d:["kɑːlm",           "kælm"]},
+  {w:"canary",         ipa:"kəˈneəri",          d:["ˈkænəri",         "kəˈnɪəri"]},
+  {w:"canoe",          ipa:"kəˈnuː",            d:["kəˈnəʊ",          "ˈkænuː"]},
+  {w:"capable",        ipa:"ˈkeɪpəbl",          d:["kəˈpeɪbl",        "ˈkæpəbl"]},
+  {w:"captain",        ipa:"ˈkæptn",            d:["ˈkæpteɪn",        "ˈkæptɪn"]},
+  {w:"caricature",     ipa:"ˈkærɪkətjʊə",       d:["ˌkærɪˈkeɪtʃə",    "ˈkærɪkeɪtʃə"]},
+  {w:"castle",         ipa:"ˈkɑːsl",            d:["ˈkɑːstl",         "ˈkæsl"]},
+  {w:"catastrophe",    ipa:"kəˈtæstrəfi",       d:["ˈkætəstrəʊf",     "kəˈtæstrəʊf"]},
+  {w:"caterpillar",    ipa:"ˈkætəpɪlə",         d:["ˈkeɪtəpɪlə",      "ˈkætəpɪlɑː"]},
+  {w:"cause",          ipa:"kɔːz",              d:["kəʊz",            "kɒz"]},
+  {w:"cavern",         ipa:"ˈkævn",             d:["ˈkeɪvən",         "ˈkɑːvən"]},
+  {w:"cease",          ipa:"siːs",              d:["siːz",            "seɪs"]},
+  {w:"ceremony",       ipa:"ˈserəməni",         d:["səˈreməni",       "ˈserəmɒni"]},
+  {w:"certain",        ipa:"ˈsɜːtn",            d:["ˈsɜːteɪn",        "ˈsɜːtɪn"]},
+  {w:"certificate",    ipa:"səˈtɪfɪkət",        d:["səˈtɪfɪkeɪt",     "ˈsɜːtɪfɪkət"]},
+  {w:"chair",          ipa:"tʃeə",              d:["tʃɜː",            "tʃɪə"]},
+  {w:"chalk",          ipa:"tʃɔːk",             d:["tʃɔːlk",          "tʃælk"]},
+  {w:"chamber",        ipa:"ˈtʃeɪmbə",          d:["ˈtʃæmbə",         "ˈtʃeɪmbɪə"]},
+  {w:"champagne",      ipa:"ʃæmˈpeɪn",         d:["tʃæmˈpeɪn",       "ʃæmˈpæn"]},
+  {w:"chandelier",     ipa:"ˌʃændəˈlɪə",        d:["ˌtʃændəˈlɪə",     "ˌʃændəˈliːə"]},
+  {w:"chaos",          ipa:"ˈkeɪɒs",            d:["ˈtʃeɪɒs",         "ˈkaɪɒs"]},
+  {w:"characterize",   ipa:"ˈkærəktəraɪz",      d:["kəˈrætəraɪz",     "ˈkærɪktəraɪz"]},
+  {w:"chef",           ipa:"ʃef",               d:["tʃef",            "ʃeɪf"]},
+  {w:"chestnut",       ipa:"ˈtʃesnʌt",          d:["ˈtʃestnʌt",       "ˈtʃesnət"]},
+  {w:"chocolate",      ipa:"ˈtʃɒklət",          d:["ˈtʃɒkleɪt",       "ˈtʃɒkɒlɪt"]},
+  {w:"choir",          ipa:"ˈkwaɪə",            d:["ˈtʃɔɪə",          "ˈkwɑːə"]},
+  {w:"cholera",        ipa:"ˈkɒlərə",           d:["həˈlerə",         "ˈtʃɒlərə"]},
+  {w:"chronic",        ipa:"ˈkrɒnɪk",           d:["ˈhrɒnɪk",         "ˈtʃrɒnɪk"]},
+  {w:"cigar",          ipa:"sɪˈɡɑː",            d:["ˈsiːɡə",          "sɪˈɡɑːr"]},
+  {w:"circuit",        ipa:"ˈsɜːkɪt",           d:["ˈsɜːkwɪt",        "ˈsɜːkɪtʃ"]},
+  {w:"city",           ipa:"ˈsɪti",             d:["ˈsiːti",          "ˈsɪtɪ"]},
+  {w:"claw",           ipa:"klɔː",              d:["kləʊ",            "klɑː"]},
+  {w:"cleanliness",    ipa:"ˈklenlɪnəs",        d:["ˈkliːnlɪnəs",     "ˈklenlɪnɪs"]},
+  {w:"cleanly",        ipa:"ˈklenli",           d:["ˈkliːnli",        "ˈklɪnli"]},
+  {w:"cleanse",        ipa:"klenz",             d:["kliːnz",          "kleɪnz"]},
+  {w:"clerk",          ipa:"klɑːk",             d:["klɜːk",           "klɑːrk"]},
+  {w:"climate",        ipa:"ˈklaɪmət",          d:["ˈklaɪmeɪt",       "ˈklɪmɪt"]},
+  {w:"climb",          ipa:"klaɪm",             d:["klaɪmb",          "klɪm"]},
+  {w:"close (adj)",    ipa:"kləʊs",             d:["kləʊz",           "klɒs"]},
+  {w:"clothes",        ipa:"kləʊðz",            d:["ˈkləʊzɪz",        "kləʊθz"]},
+  {w:"coffee",         ipa:"ˈkɒfi",             d:["ˈkɒfiː",          "ˈkɔːfi"]},
+  {w:"cohesive",       ipa:"kəʊˈhiːsɪv",        d:["kəˈhesɪv",        "kəʊˈhɪsɪv"]},
+  {w:"cold",           ipa:"kəʊld",             d:["kɒld",            "kɔːld"]},
+  {w:"colon",          ipa:"ˈkəʊlən",           d:["ˈkɒlən",          "ˈkɔːlən"]},
+  {w:"colonel",        ipa:"ˈkɜːnl",            d:["ˈkɒlənəl",        "ˈkɔːnl"]},
+  {w:"column",         ipa:"ˈkɒləm",            d:["ˈkɒləmn",         "ˈkɒljʊm"]},
+  {w:"comb",           ipa:"kəʊm",              d:["kɒmb",            "kʌm"]},
+  {w:"comfort",        ipa:"ˈkʌmfət",           d:["ˈkɒmfət",         "ˈkʌmfɔːt"]},
+  {w:"comfortable",    ipa:"ˈkʌmfətəbl",        d:["kəmˈfɔːtəbl",     "ˈkɒmfətəbl"]},
+  {w:"commerce",       ipa:"ˈkɒmɜːs",           d:["kəˈmɜːs",         "ˈkɒmərs"]},
+  {w:"committee",      ipa:"kəˈmɪti",           d:["ˈkɒmɪti",         "kəˈmɪtɪ"]},
+  {w:"company",        ipa:"ˈkʌmpəni",          d:["ˈkɒmpəni",        "ˈkʌmpæni"]},
+  {w:"compass",        ipa:"ˈkʌmpəs",           d:["ˈkɒmpæs",         "ˈkʌmpɑːs"]},
+  {w:"component",      ipa:"kəmˈpəʊnənt",       d:["ˈkɒmpənənt",      "kəmˈpɒnənt"]},
+  {w:"condemn",        ipa:"kənˈdem",           d:["kənˈdemn",        "ˈkɒndem"]},
+  {w:"conquer",        ipa:"ˈkɒŋkə",            d:["ˈkɒŋkwə",         "ˈkɒŋkeə"]},
+  {w:"conqueror",      ipa:"ˈkɒŋkərə",          d:["ˈkɒŋkwərə",       "ˈkɒŋkɪrə"]},
+  {w:"consequently",   ipa:"ˈkɒnsɪkwətli",      d:["kɒnˈsekwəntli",   "ˈkɒnsɪkwentlɪ"]},
+  {w:"conserve",       ipa:"kənˈsɜːv",          d:["kənˈzɜːv",        "ˈkɒnsɜːv"]},
+  {w:"consume",        ipa:"kənˈsjuːm",         d:["kənˈzjʊm",        "ˈkɒnsjuːm"]},
+  {w:"control",        ipa:"kənˈtrəʊl",         d:["kənˈtrɒl",        "ˈkɒntrəʊl"]},
+  {w:"corps",          ipa:"kɔː",               d:["kɔːps",           "kɒps"]},
+  {w:"cough",          ipa:"kɒf",               d:["kəʊf",            "kɔːf"]},
+  {w:"country",        ipa:"ˈkʌntri",           d:["ˈkaʊntri",        "ˈkɒntri"]},
+  {w:"courage",        ipa:"ˈkʌrɪdʒ",           d:["ˈkʌreɪdʒ",        "ˈkɒrɪdʒ"]},
+  {w:"courteous",      ipa:"ˈkɜːtɪəs",          d:["ˈkɔːtɪəs",        "ˈkɜːtjəs"]},
+  {w:"courtesy",       ipa:"ˈkɜːtəsi",          d:["ˈkɔːtəzi",        "ˈkɜːtɪsi"]},
+  {w:"cover",          ipa:"ˈkʌvə",             d:["ˈkəʊvə",          "ˈkɒvə"]},
+  {w:"cow",            ipa:"kaʊ",               d:["kəʊ",             "kɔː"]},
+  {w:"crowd",          ipa:"kraʊd",             d:["krəʊd",           "krɒd"]},
+  {w:"cuckoo",         ipa:"ˈkʊkuː",            d:["ˈkʌku",           "ˈkuːkuː"]},
+  {w:"cupboard",       ipa:"ˈkʌbəd",            d:["ˈkʌpbɔːd",        "ˈkʌpbəd"]},
+  {w:"curious",        ipa:"ˈkjʊərɪəs",         d:["ˈkjʊrjəʊs",       "ˈkjʊərɪɒs"]},
+  {w:"cushion",        ipa:"ˈkʊʃn",             d:["ˈkʌʃn",           "ˈkuːʃn"]},
+  {w:"cylinder",       ipa:"ˈsɪlɪndə",          d:["sɪˈlɪndə",        "ˈsɪlɪndɪə"]},
+  // D
+  {w:"damage",         ipa:"ˈdæmɪdʒ",           d:["ˈdæmeɪdʒ",        "ˈdeɪmɪdʒ"]},
+  {w:"damn",           ipa:"dæm",               d:["dæmn",            "deɪm"]},
+  {w:"dangerous",      ipa:"ˈdeɪndʒərəs",       d:["ˈdendʒərəs",      "ˈdeɪndʒərɪs"]},
+  {w:"dead",           ipa:"ded",               d:["diːd",            "deɪd"]},
+  {w:"deaf",           ipa:"def",               d:["diːf",            "deɪf"]},
+  {w:"debt",           ipa:"det",               d:["dept",            "dɛbt"]},
+  {w:"delicacy",       ipa:"ˈdelɪkəsi",         d:["ˈdelɪkeɪsi",      "ˈdiːlɪkəsi"]},
+  {w:"delicate",       ipa:"ˈdelɪkət",          d:["ˈdelɪkeɪt",       "ˈdeɪlɪkət"]},
+  {w:"delusion",       ipa:"dɪˈluːʒn",          d:["dəˈlʊʃn",         "dɪˈluːʒən"]},
+  {w:"demon",          ipa:"ˈdiːmən",           d:["ˈdemən",          "ˈdɪmən"]},
+  {w:"demonstrating",  ipa:"ˈdemənstreɪtɪŋ",    d:["ˌdemənˈstreɪtɪŋ", "ˈdemənstɪŋ"]},
+  {w:"Derby",          ipa:"ˈdɑːbi",            d:["ˈdɜːbi",          "ˈdɑːbɪ"]},
+  {w:"detergent",      ipa:"dɪˈtɜːdʒənt",       d:["ˈdetədʒənt",      "dɪˈtɜːɡənt"]},
+  {w:"determine",      ipa:"dɪˈtɜːmɪn",         d:["ˈdetəmaɪn",       "dɪˈtɜːmeɪn"]},
+  {w:"develop",        ipa:"dɪˈveləp",          d:["ˈdevələʊp",       "dɪˈvɛləp"]},
+  {w:"development",    ipa:"dɪˈveləpmənt",      d:["ˌdevəˈlɒpmənt",   "dɪˈvɛlɒpmənt"]},
+  {w:"diagonal",       ipa:"daɪˈæɡənl",         d:["ˌdaɪəˈɡəʊnəl",    "daɪˈæɡɒnl"]},
+  {w:"difficult",      ipa:"ˈdɪfɪkəlt",         d:["ˈdɪfɪkʌlt",       "ˈdɪfɪkɪlt"]},
+  {w:"diplomacy",      ipa:"dɪˈpləʊməsi",       d:["ˈdɪpləməsi",      "dɪˈplɒməsi"]},
+  {w:"disgust",        ipa:"dɪsˈɡʌst",          d:["dɪzˈɡʌst",        "ˈdɪsɡʌst"]},
+  {w:"dismal",         ipa:"ˈdɪzml",            d:["dɪzˈmæl",         "ˈdɪsmæl"]},
+  {w:"dissolve",       ipa:"dɪˈzɒlv",           d:["dɪˈsɒlv",         "ˈdɪzɒlv"]},
+  {w:"distinct",       ipa:"dɪˈstɪŋkt",         d:["ˈdɪstɪŋkt",       "dɪˈstɪŋk"]},
+  {w:"don't",          ipa:"dəʊnt",             d:["dɒnt",            "dɔːnt"]},
+  {w:"donkey",         ipa:"ˈdɒŋki",            d:["ˈdʌŋki",          "ˈdɒŋkeɪ"]},
+  {w:"dose",           ipa:"dəʊs",              d:["dəʊz",            "dɒs"]},
+  {w:"doubt",          ipa:"daʊt",              d:["daʊpt",           "dəʊt"]},
+  {w:"dough",          ipa:"dəʊ",               d:["daʊ",             "duː"]},
+  {w:"dove",           ipa:"dʌv",               d:["dəʊv",            "dɒv"]},
+  {w:"dozen",          ipa:"ˈdʌzn",             d:["ˈdəʊzn",          "ˈdɒzn"]},
+  {w:"draw",           ipa:"drɔː",              d:["drəʊ",            "drɑː"]},
+  {w:"driven",         ipa:"ˈdrɪvn",            d:["ˈdraɪvn",         "ˈdrɪvən"]},
+  {w:"drought",        ipa:"draʊt",             d:["drɑːft",          "drəʊt"]},
+  {w:"duplication",    ipa:"ˌdjuːplɪˈkeɪʃn",    d:["ˌdʌplɪˈkeɪʃn",    "ˌdjuːplɪˈkeɪʒn"]},
+  // E
+  {w:"ear",            ipa:"ɪə",                d:["eə",              "ɜː"]},
+  {w:"early",          ipa:"ˈɜːli",             d:["ˈiːrli",          "ˈɑːli"]},
+  {w:"ease",           ipa:"iːz",               d:["iːs",             "eɪz"]},
+  {w:"economic",       ipa:"ˌiːkəˈnɒmɪk",       d:["ɪˈkɒnəmɪk",       "ˌekəˈnɒmɪk"]},
+  {w:"edict",          ipa:"ˈiːdɪkt",           d:["ˈedɪkt",          "ˈiːdɪk"]},
+  {w:"Edinburgh",      ipa:"ˈedɪnbrə",          d:["ˈedɪnbɜːɡ",       "ˈedɪnbərɒ"]},
+  {w:"educated",       ipa:"ˈedjʊkeɪtɪd",       d:["ˌedjʊˈkeɪtɪd",    "ˈedjʊkɪtɪd"]},
+  {w:"efficient",      ipa:"ɪˈfɪʃənt",          d:["ˈefɪʃnt",         "ɪˈfɪʃɪnt"]},
+  {w:"effort",         ipa:"ˈefət",             d:["əˈfɔːt",          "ˈɛfɔːt"]},
+  {w:"eligible",       ipa:"ˈelɪdʒəbl",         d:["əˈlɪdʒəbl",       "ˈeɪlɪdʒəbl"]},
+  {w:"energy",         ipa:"ˈenədʒi",           d:["eˈnɜːdʒi",        "ˈiːnədʒi"]},
+  {w:"enormous",       ipa:"ɪˈnɔːməs",          d:["ɪˈnɔːməʊs",       "ˈenɔːməs"]},
+  {w:"entrance",       ipa:"ˈentrəns",          d:["əˈtrɑːns",        "ˈɒntrəns"]},
+  {w:"epic",           ipa:"ˈepɪk",             d:["ˈiːpɪk",          "ˈeɪpɪk"]},
+  {w:"epidemic",       ipa:"ˌepɪˈdemɪk",        d:["eˈpɪdəmɪk",       "ˌeɪpɪˈdemɪk"]},
+  {w:"ether",          ipa:"ˈiːθə",             d:["ˈiːðə",           "ˈeθə"]},
+  {w:"ethic",          ipa:"ˈeθɪk",             d:["ˈiːθɪk",          "ˈeðɪk"]},
+  {w:"event",          ipa:"ɪˈvent",            d:["ˈiːvənt",         "ˈevent"]},
+  {w:"examine",        ipa:"ɪɡˈzæmɪn",          d:["ˈeɡzəmaɪn",       "ɪɡˈzæmɪneɪt"]},
+  {w:"execute",        ipa:"ˈeksɪkjuːt",        d:["ˌeɡzəˈkjʊt",      "ˈeksɪkjʊt"]},
+  {w:"exercise",       ipa:"ˈeksəsaɪz",         d:["ˈeɡzəsaɪz",       "ˈeksəsaɪs"]},
+  {w:"exhibit",        ipa:"ɪɡˈzɪbɪt",          d:["eksˈhɪbɪt",       "ɪɡˈzɪbɪtʃ"]},
+  {w:"explanatory",    ipa:"ɪkˈsplænətri",      d:["ˌeksplɪˈneɪtəri",  "ɪkˈsplæntəri"]},
+  // F
+  {w:"facet",          ipa:"ˈfæsɪt",            d:["ˈfeɪsət",         "ˈfæseɪt"]},
+  {w:"failure",        ipa:"ˈfeɪljə",           d:["ˈfeɪlə",          "ˈfeɪlɪə"]},
+  {w:"falcon",         ipa:"ˈfɔːlkən",          d:["ˈfælkən",         "ˈfɔːkən"]},
+  {w:"fault",          ipa:"fɔːlt",             d:["fəʊlt",           "fɒlt"]},
+  {w:"favourite",      ipa:"ˈfeɪvərɪt",         d:["ˈfævərɪt",        "ˈfeɪvəreɪt"]},
+  {w:"feather",        ipa:"ˈfeðə",             d:["ˈfiːðə",          "ˈfeɪðə"]},
+  {w:"female",         ipa:"ˈfiːmeɪl",          d:["fiːˈmeɪl",        "ˈfɛmeɪl"]},
+  {w:"fetish",         ipa:"ˈfetɪʃ",            d:["ˈfiːtɪʃ",         "ˈfeɪtɪʃ"]},
+  {w:"field",          ipa:"fiːld",             d:["fɪld",            "feɪld"]},
+  {w:"finger",         ipa:"ˈfɪŋɡə",            d:["ˈfɪŋə",           "ˈfɪŋɡɪə"]},
+  {w:"finite",         ipa:"ˈfaɪnaɪt",          d:["ˈfɪnɪt",          "ˈfaɪnɪt"]},
+  {w:"flood",          ipa:"flʌd",              d:["fluːd",           "flɒd"]},
+  {w:"folk",           ipa:"fəʊk",              d:["fɒlk",            "fɔːk"]},
+  {w:"foreign",        ipa:"ˈfɒrən",            d:["fɒˈreɪn",         "ˈfɔːrɪn"]},
+  {w:"forfeit",        ipa:"ˈfɔːfɪt",           d:["fəˈfiːt",         "ˈfɒfɪt"]},
+  {w:"fowl",           ipa:"faʊl",              d:["fəʊl",            "fɔːl"]},
+  {w:"frequent",       ipa:"ˈfriːkwənt",        d:["ˈfrekwənt",       "ˈfriːkwɪnt"]},
+  {w:"front",          ipa:"frʌnt",             d:["frɒnt",           "frəʊnt"]},
+  {w:"fruit",          ipa:"fruːt",             d:["frʊt",            "frəʊt"]},
+  {w:"further",        ipa:"ˈfɜːðə",            d:["ˈfʌfðə",          "ˈfɜːðɪə"]},
+  // G
+  {w:"gaol",           ipa:"dʒeɪl",             d:["ɡəʊl",            "dʒɑːl"]},
+  {w:"garage",         ipa:"ˈɡærɑːdʒ",          d:["ɡəˈreɪdʒ",        "ˈɡæreɪdʒ"]},
+  {w:"gauge",          ipa:"ɡeɪdʒ",             d:["ɡɔːdʒ",           "ɡeɪʒ"]},
+  {w:"gear",           ipa:"ɡɪə",               d:["dʒɪə",            "ɡeə"]},
+  {w:"generative",     ipa:"ˈdʒenərətɪv",       d:["ˈdʒenəreɪtɪv",    "ˈdʒenərɪtɪv"]},
+  {w:"geographic",     ipa:"ˌdʒɪəˈɡræfɪk",      d:["dʒɪˈɒɡræfɪk",     "ˌdʒɪəˈɡrɑːfɪk"]},
+  {w:"geometry",       ipa:"dʒɪˈɒmətri",        d:["ˈdʒɪəmətri",       "dʒɪˈɒmɪtri"]},
+  {w:"gesture",        ipa:"ˈdʒestʃə",          d:["ˈɡestʃə",         "ˈdʒestʃɪə"]},
+  {w:"geyser",         ipa:"ˈɡiːzə",            d:["ˈɡeɪzə",          "ˈɡaɪzə"]},
+  {w:"glove",          ipa:"ɡlʌv",              d:["ɡləʊv",           "ɡlɒv"]},
+  {w:"glow",           ipa:"ɡləʊ",              d:["ɡlaʊ",            "ɡlɔː"]},
+  {w:"going",          ipa:"ˈɡəʊɪŋ",            d:["ˈɡɒɪŋ",           "ˈɡɔːɪŋ"]},
+  {w:"gone",           ipa:"ɡɒn",               d:["ɡʌn",             "ɡəʊn"]},
+  {w:"goose",          ipa:"ɡuːs",              d:["ɡuːz",            "ɡʊs"]},
+  {w:"gooseberry",     ipa:"ˈɡʊzbəri",          d:["ˈɡʊsbəri",        "ˈɡuːzbəri"]},
+  {w:"gracious",       ipa:"ˈɡreɪʃəs",          d:["ˈɡræʃəs",         "ˈɡreɪʒəs"]},
+  {w:"Graham",         ipa:"ˈɡreɪəm",           d:["ˈɡræhæm",         "ˈɡreɪhæm"]},
+  {w:"gravel",         ipa:"ˈɡrævl",            d:["ˈɡreɪvl",         "ˈɡrɑːvl"]},
+  {w:"gravity",        ipa:"ˈɡrævəti",          d:["ˈɡreɪvɪti",       "ˈɡrævɪti"]},
+  {w:"Greenwich",      ipa:"ˈɡrenɪtʃ",          d:["ˈɡriːnɪtʃ",       "ˈɡrenɪdʒ"]},
+  {w:"gross",          ipa:"ɡrəʊs",             d:["ɡrɒs",            "ɡrɔːs"]},
+  {w:"group",          ipa:"ɡruːp",             d:["ɡrəʊp",           "ɡrʊp"]},
+  {w:"guitar",         ipa:"ɡɪˈtɑː",            d:["ˈɡiːtə",          "ɡɪˈtɑːr"]},
+  // H
+  {w:"half",           ipa:"hɑːf",              d:["hɑːlf",           "hæf"]},
+  {w:"handkerchief",   ipa:"ˈhæŋkətʃɪf",        d:["ˈhændkətʃɪf",     "ˈhæŋkətʃiːf"]},
+  {w:"handsome",       ipa:"ˈhænsəm",           d:["ˈhændsəm",        "ˈhænsɒm"]},
+  {w:"hasten",         ipa:"ˈheɪsn",            d:["ˈheɪstən",        "ˈhæsn"]},
+  {w:"haunt",          ipa:"hɔːnt",             d:["haʊnt",           "hɑːnt"]},
+  {w:"haven",          ipa:"ˈheɪvn",            d:["ˈhævn",           "ˈheɪvən"]},
+  {w:"hawk",           ipa:"hɔːk",              d:["həʊk",            "hɑːk"]},
+  {w:"health",         ipa:"helθ",              d:["hiːlθ",           "helð"]},
+  {w:"heard",          ipa:"hɜːd",              d:["hɪəd",            "hɑːd"]},
+  {w:"hearth",         ipa:"hɑːθ",              d:["hɪəθ",            "hɑːð"]},
+  {w:"heather",        ipa:"ˈheðə",             d:["ˈhiːθə",          "ˈheɪðə"]},
+  {w:"height",         ipa:"haɪt",              d:["heɪt",            "hɪt"]},
+  {w:"heir",           ipa:"eə",                d:["heə",             "ɪə"]},
+  {w:"herring",        ipa:"ˈherɪŋ",            d:["ˈhɪərɪŋ",         "ˈheərɪŋ"]},
+  {w:"heroine",        ipa:"ˈherəʊɪn",          d:["ˈhɪərəʊɪn",       "ˈherɪn"]},
+  {w:"heroism",        ipa:"ˈherəʊɪzəm",        d:["ˈhiːrəʊɪzm",      "ˈherɪzəm"]},
+  {w:"hiccough",       ipa:"ˈhɪkʌp",            d:["ˈhɪkəʊf",         "ˈhɪkɒp"]},
+  {w:"hideous",        ipa:"ˈhɪdɪəs",           d:["ˈhaɪdɪəs",        "ˈhɪdɪɒs"]},
+  {w:"hind",           ipa:"haɪnd",             d:["hɪnd",            "hiːnd"]},
+  {w:"holy",           ipa:"ˈhəʊli",            d:["ˈhɒli",           "ˈhɔːli"]},
+  {w:"honest",         ipa:"ˈɒnɪst",            d:["ˈəʊnəst",         "ˈhɒnɪst"]},
+  {w:"honey",          ipa:"ˈhʌni",             d:["ˈhʌneɪ",          "ˈhɒni"]},
+  {w:"honour",         ipa:"ˈɒnə",              d:["ˈhɒnə",           "ˈɔːnə"]},
+  {w:"houses",         ipa:"ˈhaʊzɪz",           d:["ˈhaʊsɪz",         "ˈhaʊzɪs"]},
+  {w:"howl",           ipa:"haʊl",              d:["həʊl",            "hɔːl"]},
+  {w:"hurt",           ipa:"hɜːt",              d:["hʌrt",            "hɔːt"]},
+  {w:"hymn",           ipa:"hɪm",               d:["hɪmn",            "haɪm"]},
+  // I
+  {w:"image",          ipa:"ˈɪmɪdʒ",            d:["ɪˈmeɪdʒ",         "ˈɪmɪʒ"]},
+  {w:"increase (v)",   ipa:"ɪnˈkriːs",          d:["ɪnˈkriːz",        "ˈɪnkriːs"]},
+  {w:"industry",       ipa:"ˈɪndəstri",         d:["ɪnˈdʌstri",       "ˈɪnduːstri"]},
+  {w:"infamous",       ipa:"ˈɪnfəməs",          d:["ɪnˈfeɪməs",       "ˈɪnfæməs"]},
+  {w:"inhale",         ipa:"ɪnˈheɪl",           d:["ɪnˈhɑːl",         "ˈɪnheɪl"]},
+  {w:"initiative",     ipa:"ɪˈnɪʃətɪv",         d:["ˈɪnɪʃjeɪtɪv",     "ɪˈnɪʃɪtɪv"]},
+  {w:"instead",        ipa:"ɪnˈsted",           d:["ɪnˈstiːd",        "ˈɪnsted"]},
+  {w:"insurance",      ipa:"ɪnˈʃʊərəns",        d:["ˈɪnʃərəns",       "ɪnˈʃɔːrəns"]},
+  {w:"international",  ipa:"ˌɪntəˈnæʃənl",      d:["ˌɪntəˈneɪʃənl",   "ˌɪntəˈnæʃnl"]},
+  {w:"interpret",      ipa:"ɪnˈtɜːprɪt",        d:["ˌɪntəˈpriːt",     "ɪnˈtɜːprɪtʃ"]},
+  {w:"intestine",      ipa:"ɪnˈtestɪn",         d:["ˈɪntəstaɪn",      "ɪnˈtestɪneɪt"]},
+  {w:"invalid (ill)",  ipa:"ˈɪnvəlɪd",          d:["ɪnˈvælɪd",        "ˈɪnvælaɪd"]},
+  {w:"inventory",      ipa:"ˈɪnvəntri",         d:["ɪnˈventəri",      "ˈɪnventri"]},
+  {w:"iron",           ipa:"ˈaɪən",             d:["ˈaɪrən",          "ˈɪərən"]},
+  {w:"irrational",     ipa:"ɪˈræʃənl",          d:["ɪˈreɪʃənəl",      "ˈɪræʃənl"]},
+  {w:"island",         ipa:"ˈaɪlənd",           d:["ˈaɪslənd",        "ˈɪlənd"]},
+  // J
+  {w:"Japan",          ipa:"dʒəˈpæn",           d:["ˈdʒæpən",         "dʒəˈpɑːn"]},
+  {w:"jealous",        ipa:"ˈdʒeləs",           d:["ˈdʒɜːləs",        "ˈdʒɛləs"]},
+  {w:"journey",        ipa:"ˈdʒɜːni",           d:["ˈdʒɔːneɪ",        "ˈdʒɜːneɪ"]},
+  {w:"jury",           ipa:"ˈdʒʊəri",           d:["ˈdʒʊri",          "ˈdʒɜːri"]},
+  // K
+  {w:"key",            ipa:"kiː",               d:["keɪ",             "kɪ"]},
+  {w:"knowledge",      ipa:"ˈnɒlɪdʒ",           d:["ˈnəʊlɪdʒ",        "ˈnɒlɪdʒɪ"]},
+  {w:"known",          ipa:"nəʊn",              d:["naʊn",            "nɒn"]},
+  {w:"Korea",          ipa:"kəˈrɪə",            d:["ˈkɒrɪə",          "kəˈriːə"]},
+  // L
+  {w:"lamb",           ipa:"læm",               d:["læmb",            "lɑːm"]},
+  {w:"law",            ipa:"lɔː",               d:["ləʊ",             "lɑː"]},
+  {w:"lawn",           ipa:"lɔːn",              d:["ləʊn",            "lɑːn"]},
+  {w:"layer",          ipa:"ˈleɪə",             d:["ˈlaɪə",           "ˈlɛə"]},
+  {w:"lead (n.)",      ipa:"led",               d:["liːd",            "leɪd"]},
+  {w:"lead (v.)",      ipa:"liːd",              d:["led",             "leɪd"]},
+  {w:"legend",         ipa:"ˈledʒənd",          d:["ˈleɡənd",         "ˈliːdʒənd"]},
+  {w:"legislative",    ipa:"ˈledʒɪslətɪv",      d:["ˌledʒɪsˈleɪtɪv",  "ˈledʒɪsleɪtɪv"]},
+  {w:"Leicester",      ipa:"ˈlestə",            d:["ˈleɪtʃəstə",      "ˈlɛstɪə"]},
+  {w:"leisure",        ipa:"ˈleʒə",             d:["ˈleɪʒə",          "ˈliːʒə"]},
+  {w:"Leonard",        ipa:"ˈlenəd",            d:["ˈlɪənɑːd",        "ˈlenɑːd"]},
+  {w:"leopard",        ipa:"ˈlepəd",            d:["ˈlɪəpɑːd",        "ˈlepɑːd"]},
+  {w:"lettuce",        ipa:"ˈletɪs",            d:["ˈletjʊs",         "ˈletuːs"]},
+  {w:"lieutenant",     ipa:"lefˈtenənt",        d:["ˈlɔɪtənənt",      "ljuːˈtenənt"]},
+  {w:"limb",           ipa:"lɪm",               d:["lɪmb",            "laɪm"]},
+  {w:"liqueur",        ipa:"lɪˈkjʊə",           d:["ˈlɪkwə",          "lɪˈkjʊər"]},
+  {w:"liquor",         ipa:"ˈlɪkə",             d:["ˈlɪkwə",          "ˈliːkə"]},
+  {w:"litre",          ipa:"ˈliːtə",            d:["ˈlɪtə",           "ˈliːtɪə"]},
+  {w:"live (adj)",     ipa:"laɪv",              d:["lɪv",             "liːv"]},
+  {w:"loose",          ipa:"luːs",              d:["luːz",            "lʊs"]},
+  {w:"lose",           ipa:"luːz",              d:["ləʊz",            "lʊz"]},
+  {w:"loud",           ipa:"laʊd",              d:["ləʊd",            "lɒd"]},
+  {w:"lounge",         ipa:"laʊndʒ",            d:["ləʊndʒ",          "lɔːndʒ"]},
+  {w:"lower",          ipa:"ˈləʊə",             d:["ˈlaʊə",           "ˈlɔːə"]},
+  // M
+  {w:"Madrid",         ipa:"məˈdrɪd",           d:["ˈmædrɪd",         "məˈdriːd"]},
+  {w:"mamma",          ipa:"məˈmɑː",            d:["ˈmæmə",           "ˈmɑːmə"]},
+  {w:"manger",         ipa:"ˈmeɪndʒə",          d:["ˈmændʒə",         "ˈmeɪndʒɪə"]},
+  {w:"manor",          ipa:"ˈmænə",             d:["ˈmeɪnə",          "ˈmɑːnə"]},
+  {w:"many",           ipa:"ˈmeni",             d:["ˈmæni",           "ˈmeɪni"]},
+  {w:"marine",         ipa:"məˈriːn",           d:["məˈraɪn",         "ˈmærɪn"]},
+  {w:"mausoleum",      ipa:"ˌmɒsəˈliːəm",       d:["ˌmɒzəˈliːəm",     "ˌmɒsəˈlɪəm"]},
+  {w:"meadow",         ipa:"ˈmedəʊ",            d:["ˈmiːdəʊ",         "ˈmeɪdəʊ"]},
+  {w:"means",          ipa:"miːnz",             d:["miːns",           "meɪnz"]},
+  {w:"medium",         ipa:"ˈmiːdɪəm",          d:["ˈmedɪəm",         "ˈmiːdjəm"]},
+  {w:"memorable",      ipa:"ˈmemərəbl",         d:["ˈmeməreɪbl",      "ˈmɛmərɪbl"]},
+  {w:"menace",         ipa:"ˈmenəs",            d:["məˈneɪs",         "ˈmiːnəs"]},
+  {w:"message",        ipa:"ˈmesɪdʒ",           d:["məˈseɪdʒ",        "ˈmesɪʒ"]},
+  {w:"metropolitan",   ipa:"ˌmetrəˈpɒlɪtən",    d:["məˈtrɒpəlɪtn",    "ˌmetrəˈpɒlɪtn"]},
+  {w:"million",        ipa:"ˈmɪlɪən",           d:["ˈmɪljɒn",         "ˈmɪljən"]},
+  {w:"minute (adj)",   ipa:"maɪˈnjuːt",         d:["ˈmɪnɪt",          "maɪˈnjuːtʃ"]},
+  {w:"mischief",       ipa:"ˈmɪstʃɪf",          d:["mɪsˈtʃiːf",       "ˈmɪstʃiːf"]},
+  {w:"model",          ipa:"ˈmɒdl",             d:["ˈməʊdl",          "ˈmɒdəl"]},
+  {w:"money",          ipa:"ˈmʌni",             d:["ˈmʌneɪ",          "ˈmɒni"]},
+  {w:"mongrel",        ipa:"ˈmʌŋɡrəl",          d:["ˈmɒŋɡrəl",        "ˈmʌŋɡrɪl"]},
+  {w:"monk",           ipa:"mʌŋk",              d:["mɒŋk",            "mʊŋk"]},
+  {w:"monkey",         ipa:"ˈmʌŋki",            d:["ˈmʌŋkeɪ",         "ˈmɒŋki"]},
+  {w:"monopolize",     ipa:"məˈnɒpəlaɪz",       d:["ˈmɒnəpəlaɪz",     "məˈnɒpəlaɪs"]},
+  {w:"motor",          ipa:"ˈməʊtə",            d:["ˈmɒtə",           "ˈmɔːtə"]},
+  {w:"mountain",       ipa:"ˈmaʊntɪn",          d:["ˈmaʊnteɪn",       "ˈmaʊntən"]},
+  {w:"mouth",          ipa:"maʊθ",              d:["məʊθ",            "mɔːθ"]},
+  {w:"muscle",         ipa:"ˈmʌsl",             d:["ˈmʌskl",          "ˈmʌsəl"]},
+  // N
+  {w:"national",       ipa:"ˈnæʃnəl",           d:["ˈneɪʃənəl",       "ˈnæʃənl"]},
+  {w:"nationality",    ipa:"ˌnæʃəˈnælɪti",      d:["ˌneɪʃənˈælɪti",   "ˌnæʃəˈnælɪtɪ"]},
+  {w:"natural",        ipa:"ˈnætʃərəl",         d:["ˈneɪtʃərəl",      "ˈnætʃrəl"]},
+  {w:"nausea",         ipa:"ˈnɔːzɪə",           d:["ˈnəʊzɪə",         "ˈnɔːsɪə"]},
+  {w:"near",           ipa:"nɪə",               d:["neə",             "nɜː"]},
+  {w:"necessary",      ipa:"ˈnesɪsəri",         d:["nəˈsesəri",       "ˈnesɪsɛri"]},
+  {w:"neighbour",      ipa:"ˈneɪbə",            d:["ˈneɪbaʊ",         "ˈneɪbɪə"]},
+  {w:"neon",           ipa:"ˈniːɒn",            d:["ˈnɪən",           "ˈneɪɒn"]},
+  {w:"nestle",         ipa:"ˈnesl",             d:["ˈnestl",          "ˈnɛzl"]},
+  {w:"nocturnal",      ipa:"nɒkˈtɜːnl",         d:["ˈnɒktənl",        "nɒkˈtɜːnəl"]},
+  {w:"nominative",     ipa:"ˈnɒmɪnətɪv",        d:["ˈnɒmɪneɪtɪv",     "ˈnɒmɪnɪtɪv"]},
+  {w:"novel",          ipa:"ˈnɒvl",             d:["ˈnəʊvl",          "ˈnɒvəl"]},
+  {w:"nurse",          ipa:"nɜːs",              d:["nʌrs",            "nɔːs"]},
+  {w:"nylon",          ipa:"ˈnaɪlən",           d:["ˈnɪlən",          "ˈnaɪlɒn"]},
+  // O
+  {w:"obtain",         ipa:"əbˈteɪn",           d:["ˈɒpteɪn",         "əbˈteɪnɪ"]},
+  {w:"occur",          ipa:"əˈkɜː",             d:["əˈkjʊə",          "ˈɒkɜː"]},
+  {w:"old",            ipa:"əʊld",              d:["ɒld",             "ɔːld"]},
+  {w:"onion",          ipa:"ˈʌnjən",            d:["ˈɒnɪən",          "ˈʌnjɒn"]},
+  {w:"only",           ipa:"ˈəʊnli",            d:["ˈɒnli",           "ˈɔːnli"]},
+  {w:"opera",          ipa:"ˈɒpərə",            d:["ˈəʊpərə",         "ˈɒpɪrə"]},
+  {w:"opinion",        ipa:"əˈpɪnjən",          d:["əˈpiːnjən",       "ˈɒpɪnjən"]},
+  {w:"opponent",       ipa:"əˈpəʊnənt",         d:["ˈɒpənənt",        "əˈpɒnənt"]},
+  {w:"opposite",       ipa:"ˈɒpəzɪt",           d:["ˈɒpəzaɪt",        "ˈɒpɒzɪt"]},
+  {w:"optimistic",     ipa:"ˌɒptɪˈmɪstɪk",      d:["ˈɒptɪmɪstɪk",     "ˌɒptɪˈmɪstɪkl"]},
+  {w:"orange",         ipa:"ˈɒrɪndʒ",           d:["ˈɒreɪndʒ",        "ˈɔːrɪndʒ"]},
+  {w:"other",          ipa:"ˈʌðə",              d:["ˈɒðə",            "ˈəʊðə"]},
+  {w:"ought",          ipa:"ɔːt",               d:["əʊ",              "ɒt"]},
+  {w:"outside",        ipa:"ˈaʊtsaɪd",          d:["ˈəʊtsaɪd",        "ˈɑʊtsaɪd"]},
+  {w:"oven",           ipa:"ˈʌvn",              d:["ˈɒvn",            "ˈəʊvn"]},
+  {w:"owl",            ipa:"aʊl",               d:["əʊl",             "ɔːl"]},
+  {w:"own",            ipa:"əʊn",               d:["aʊn",             "ɒn"]},
+  // P
+  {w:"palace",         ipa:"ˈpæləs",            d:["pəˈleɪs",         "ˈpeɪləs"]},
+  {w:"palate",         ipa:"ˈpælət",            d:["pəˈleɪt",         "ˈpeɪlɪt"]},
+  {w:"palm",           ipa:"pɑːm",              d:["pɑːlm",           "pælm"]},
+  {w:"pansy",          ipa:"ˈpænzi",            d:["ˈpɑːnsi",         "ˈpeɪnzi"]},
+  {w:"papa",           ipa:"pəˈpɑː",            d:["ˈpɑːpə",          "ˈpæpə"]},
+  {w:"parental",       ipa:"pəˈrentl",          d:["ˈpærəntəl",       "pəˈrɛntl"]},
+  {w:"passage",        ipa:"ˈpæsɪdʒ",           d:["ˈpæseɪdʒ",        "ˈpɑːsɪdʒ"]},
+  {w:"patrol",         ipa:"pəˈtrəʊl",          d:["ˈpætrəl",         "pəˈtrɒl"]},
+  {w:"patron",         ipa:"ˈpeɪtrən",          d:["ˈpætrən",         "ˈpeɪtrɒn"]},
+  {w:"peasant",        ipa:"ˈpeznt",            d:["ˈpiːznt",         "ˈpɛzənt"]},
+  {w:"people",         ipa:"ˈpiːpl",            d:["ˈpiːpu",          "ˈpiːpəl"]},
+  {w:"persist",        ipa:"pəˈsɪst",           d:["pəˈzɪst",         "ˈpɜːsɪst"]},
+  {w:"phlegm",         ipa:"flem",              d:["fleɡm",           "fliːm"]},
+  {w:"picture",        ipa:"ˈpɪktʃə",           d:["ˈpiːktʃə",        "ˈpɪktʃɪə"]},
+  {w:"pint",           ipa:"paɪnt",             d:["pɪnt",            "piːnt"]},
+  {w:"pitch",          ipa:"pɪtʃ",              d:["piːtʃ",           "pɪtʃɪ"]},
+  {w:"plaid",          ipa:"plæd",              d:["pleɪd",           "plɑːd"]},
+  {w:"plait",          ipa:"plæt",              d:["pleɪt",           "plɑːt"]},
+  {w:"plant",          ipa:"plɑːnt",            d:["plænt",           "plɑːntɪ"]},
+  {w:"plough",         ipa:"plaʊ",              d:["pləʊ",            "plɒf"]},
+  {w:"poll",           ipa:"pəʊl",              d:["pɒl",             "pɔːl"]},
+  {w:"pony",           ipa:"ˈpəʊni",            d:["ˈpɒni",           "ˈpɔːni"]},
+  {w:"possess",        ipa:"pəˈzes",            d:["pəˈses",          "ˈpɒzes"]},
+  {w:"possible",       ipa:"ˈpɒsɪbl",           d:["pɒˈsɪbl",         "ˈpɒsɪbəl"]},
+  {w:"poverty",        ipa:"ˈpɒvəti",           d:["ˈpʌvəti",         "ˈpɒvɪti"]},
+  {w:"power",          ipa:"ˈpaʊə",             d:["ˈpəʊə",           "ˈpɔːə"]},
+  {w:"precious",       ipa:"ˈpreʃəs",           d:["ˈpreʃjəʊs",       "ˈpreʒəs"]},
+  {w:"predicate",      ipa:"ˈpredɪkət",         d:["ˈpredɪkeɪt",      "ˈprɛdɪkɪt"]},
+  {w:"preface",        ipa:"ˈprefəs",           d:["prɪˈfeɪs",        "ˈpreɪfəs"]},
+  {w:"preference",     ipa:"ˈprefrəns",         d:["prɪˈferəns",      "ˈprefərəns"]},
+  {w:"pressure",       ipa:"ˈpreʃə",            d:["ˈpreʒə",          "ˈpriːʃə"]},
+  {w:"prevalent",      ipa:"ˈprevələnt",        d:["prəˈvælənt",      "ˈprevɪlənt"]},
+  {w:"private",        ipa:"ˈpraɪvət",          d:["ˈpraɪveɪt",       "ˈprɪvət"]},
+  {w:"process",        ipa:"ˈprəʊses",          d:["prəʊˈses",        "ˈprɒses"]},
+  {w:"professor",      ipa:"prəˈfesə",          d:["ˈprɒfəsə",        "prəˈfɛsə"]},
+  {w:"pronounce",      ipa:"prəˈnaʊns",         d:["prəˈnaʊs",        "ˈprəʊnaʊns"]},
+  {w:"protein",        ipa:"ˈprəʊtiːn",         d:["prəˈteɪn",        "ˈprɒtɪn"]},
+  {w:"proud",          ipa:"praʊd",             d:["prəʊd",           "prɒd"]},
+  {w:"prove",          ipa:"pruːv",             d:["prəʊv",           "prʊv"]},
+  {w:"provocative",    ipa:"prəˈvɒkətɪv",       d:["prəˈvəʊkətɪv",    "prəˈvɒkɪtɪv"]},
+  {w:"psalm",          ipa:"sɑːm",              d:["psɑːlm",          "sælm"]},
+  {w:"pudding",        ipa:"ˈpʊdɪŋ",            d:["ˈpʌdɪŋ",          "ˈpuːdɪŋ"]},
+  {w:"puny",           ipa:"ˈpjuːni",           d:["ˈpʌni",           "ˈpjuːnɪ"]},
+  {w:"purchase",       ipa:"ˈpɜːtʃəs",          d:["pəˈtʃeɪs",        "ˈpɜːtʃɪs"]},
+  {w:"purple",         ipa:"ˈpɜːpl",            d:["ˈpʌrpl",          "ˈpɜːpəl"]},
+  {w:"pyjamas",        ipa:"pəˈdʒɑːməz",        d:["ˈpɪdʒəməs",       "pəˈdʒæməz"]},
+  // Q
+  {w:"quantity",       ipa:"ˈkwɒntɪti",         d:["ˈkwɑːntɪti",      "ˈkwɒntɪtɪ"]},
+  {w:"quay",           ipa:"kiː",               d:["kweɪ",            "keɪ"]},
+  // R
+  {w:"raspberry",      ipa:"ˈrɑːzbəri",         d:["ˈrɑːspbəri",      "ˈræzbəri"]},
+  {w:"ratio",          ipa:"ˈreɪʃɪəʊ",          d:["ˈræʃjəʊ",         "ˈreɪʃjəʊ"]},
+  {w:"ration",         ipa:"ˈræʃn",             d:["ˈreɪʃn",          "ˈrɑːʃn"]},
+  {w:"rational",       ipa:"ˈræʃənl",           d:["ˈreɪʃənl",        "ˈrɑːʃənl"]},
+  {w:"realm",          ipa:"relm",              d:["rɪəlm",           "reɪlm"]},
+  {w:"receipt",        ipa:"rɪˈsiːt",           d:["rɪˈsiːpt",        "ˈriːsiːt"]},
+  {w:"recently",       ipa:"ˈriːsntli",         d:["ˈresntli",        "ˈriːsentli"]},
+  {w:"record (n)",     ipa:"ˈrekɔːd",           d:["ˈrekəd",          "rɪˈkɔːd"]},
+  {w:"region",         ipa:"ˈriːdʒən",          d:["ˈrɪdʒən",         "ˈreɪdʒən"]},
+  {w:"relic",          ipa:"ˈrelɪk",            d:["ˈriːlɪk",         "ˈreɪlɪk"]},
+  {w:"remain",         ipa:"rɪˈmeɪn",           d:["rɪˈmaɪn",         "ˈriːmeɪn"]},
+  {w:"require",        ipa:"rɪˈkwaɪə",          d:["reˈkwaɪə",        "rɪˈkwaɪɪə"]},
+  {w:"resound",        ipa:"rɪˈzaʊnd",          d:["rɪˈsaʊnd",        "ˈriːzaʊnd"]},
+  {w:"rhythm",         ipa:"ˈrɪðəm",            d:["ˈrɪθm",           "ˈrɪðm"]},
+  {w:"robot",          ipa:"ˈrəʊbət",           d:["ˈrɒbɒt",          "ˈrəʊbɒt"]},
+  {w:"rocket",         ipa:"ˈrɒkɪt",            d:["ˈrækɪt",          "ˈrɒkɪtʃ"]},
+  {w:"roll",           ipa:"rəʊl",              d:["rɒl",             "rɔːl"]},
+  {w:"rough",          ipa:"rʌf",               d:["rəʊf",            "rɒf"]},
+  {w:"route",          ipa:"ruːt",              d:["rəʊt",            "rʊt"]},
+  {w:"row (quarrel)",  ipa:"raʊ",               d:["rəʊ",             "rɔː"]},
+  {w:"ruin",           ipa:"ˈrʊɪn",             d:["ˈrʌɪn",           "ruːɪn"]},
+  // S
+  {w:"said",           ipa:"sed",               d:["seɪd",            "sɛd"]},
+  {w:"salmon",         ipa:"ˈsæmən",            d:["ˈsɑːlmən",        "ˈsælmən"]},
+  {w:"sardine",        ipa:"sɑːˈdiːn",          d:["ˈsɑːdaɪn",        "sɑːˈdɪn"]},
+  {w:"satire",         ipa:"ˈsætaɪə",           d:["səˈtaɪə",         "ˈseɪtaɪə"]},
+  {w:"satiric",        ipa:"səˈtɪrɪk",          d:["ˈsætɪrɪk",        "səˈtaɪərɪk"]},
+  {w:"sausage",        ipa:"ˈsɒsɪdʒ",           d:["ˈsəʊseɪdʒ",       "ˈsɔːsɪdʒ"]},
+  {w:"saw",            ipa:"sɔː",               d:["seʊ",             "sɑː"]},
+  {w:"says",           ipa:"sez",               d:["seɪz",            "sɛz"]},
+  {w:"scarce",         ipa:"skeəs",             d:["skɑːs",           "skeɪs"]},
+  {w:"sceptic",        ipa:"ˈskeptɪk",          d:["ˈstseptɪk",       "ˈsɛptɪk"]},
+  {w:"sedentary",      ipa:"ˈsedntəri",         d:["səˈdentəri",      "ˈsedəntɛri"]},
+  {w:"seize",          ipa:"siːz",              d:["seɪz",            "siːs"]},
+  {w:"senate",         ipa:"ˈsenət",            d:["ˈseneɪt",         "ˈsiːnɪt"]},
+  {w:"separate (adj)", ipa:"ˈseprət",           d:["ˈsepəreɪt",       "ˈsepərɪt"]},
+  {w:"sergeant",       ipa:"ˈsɑːdʒənt",         d:["ˈsɜːdʒənt",       "ˈsɑːdʒɪnt"]},
+  {w:"serious",        ipa:"ˈsɪərɪəs",          d:["ˈserjəs",         "ˈsɪərɪɒs"]},
+  {w:"sew",            ipa:"səʊ",               d:["sjuː",            "sjʊ"]},
+  {w:"sewn",           ipa:"səʊn",              d:["sjuːn",           "sjʊn"]},
+  {w:"shepherd",       ipa:"ˈʃepəd",            d:["ˈʃefəd",          "ˈʃepɑːd"]},
+  {w:"shiver",         ipa:"ˈʃɪvə",             d:["ˈʃaɪvə",          "ˈʃɪvɪə"]},
+  {w:"shoe",           ipa:"ʃuː",               d:["ʃəʊ",             "ʃɪ"]},
+  {w:"shone",          ipa:"ʃɒn",               d:["ʃəʊn",            "ʃɔːn"]},
+  {w:"shout",          ipa:"ʃaʊt",              d:["ʃəʊt",            "ʃɔːt"]},
+  {w:"shove",          ipa:"ʃʌv",               d:["ʃəʊv",            "ʃɒv"]},
+  {w:"shovel",         ipa:"ˈʃʌvl",             d:["ˈʃɒvl",           "ˈʃəʊvl"]},
+  {w:"sieve",          ipa:"sɪv",               d:["siːv",            "sɪvɪ"]},
+  {w:"singer",         ipa:"ˈsɪŋə",             d:["ˈsɪŋɡə",          "ˈsɪŋɪə"]},
+  {w:"solar",          ipa:"ˈsəʊlə",            d:["ˈsɒlə",           "ˈsɔːlə"]},
+  {w:"soldier",        ipa:"ˈsəʊldʒə",          d:["ˈsɒldʒə",         "ˈsəʊldjə"]},
+  {w:"solemn",         ipa:"ˈsɒləm",            d:["ˈsɒləmn",         "ˈsɒlɪm"]},
+  {w:"solo",           ipa:"ˈsəʊləʊ",           d:["ˈsɒləʊ",          "ˈsɔːləʊ"]},
+  {w:"Somerset",       ipa:"ˈsʌməsɪt",          d:["ˈsɒməsɪt",        "ˈsʌməset"]},
+  {w:"soup",           ipa:"suːp",              d:["səʊp",            "sʊp"]},
+  {w:"south",          ipa:"saʊθ",              d:["səʊθ",            "sɔːθ"]},
+  {w:"southern",       ipa:"ˈsʌðən",            d:["ˈsaʊðən",         "ˈsɒðən"]},
+  {w:"spacious",       ipa:"ˈspeɪʃəs",          d:["ˈspæʃəs",         "ˈspeɪʒəs"]},
+  {w:"special",        ipa:"ˈspeʃl",            d:["ˈspeʃjəl",        "ˈspeʃɪl"]},
+  {w:"sponge",         ipa:"spʌndʒ",            d:["spɒndʒ",          "spəʊndʒ"]},
+  {w:"spread",         ipa:"spred",             d:["spriːd",          "spreɪd"]},
+  {w:"stagger",        ipa:"ˈstæɡə",            d:["ˈstædʒə",         "ˈsteɪɡə"]},
+  {w:"stature",        ipa:"ˈstætʃə",           d:["ˈsteɪtʃə",        "ˈstætjʊə"]},
+  {w:"statute",        ipa:"ˈstætjuːt",         d:["ˈsteɪtjʊt",       "ˈstætjʊt"]},
+  {w:"steady",         ipa:"ˈstedi",            d:["ˈstiːdi",         "ˈsteɪdi"]},
+  {w:"steak",          ipa:"steɪk",             d:["stiːk",           "stɛk"]},
+  {w:"Stephen",        ipa:"ˈstiːvn",           d:["ˈstefn",          "ˈstiːfn"]},
+  {w:"stereo",         ipa:"ˈsterɪəʊ",          d:["ˈstiːrjəʊ",       "ˈsterɪɒ"]},
+  {w:"stomach",        ipa:"ˈstʌmək",           d:["ˈstɒmək",         "ˈstʌmɑːk"]},
+  {w:"stout",          ipa:"staʊt",             d:["stəʊt",           "stɔːt"]},
+  {w:"studious",       ipa:"ˈstjuːdɪəs",        d:["ˈstʌdɪəs",        "ˈstjuːdɪɒs"]},
+  {w:"subtle",         ipa:"ˈsʌtl",             d:["ˈsʌbtl",          "ˈsʌtəl"]},
+  {w:"success",        ipa:"səkˈses",           d:["ˈsʌksəs",         "səkˈsɛs"]},
+  {w:"suitable",       ipa:"ˈsuːtəbl",          d:["ˈsjuːteɪbl",      "ˈsuːtɪbl"]},
+  {w:"superior",       ipa:"suːˈpɪərɪə",        d:["ˈsʌpɪərɪə",       "suːˈpɪərɪɒ"]},
+  {w:"supply",         ipa:"səˈplaɪ",           d:["sʌˈplaɪ",         "ˈsʌplaɪ"]},
+  {w:"suppose",        ipa:"səˈpəʊz",           d:["sʌˈpəʊz",         "ˈsɒpəʊz"]},
+  {w:"surface",        ipa:"ˈsɜːfɪs",           d:["ˈsɜːfeɪs",        "ˈsɜːfɪz"]},
+  {w:"swan",           ipa:"swɒn",              d:["swæn",            "swɔːn"]},
+  {w:"sweat",          ipa:"swet",              d:["swiːt",           "sweɪt"]},
+  {w:"sweater",        ipa:"ˈswetə",            d:["ˈswiːtə",         "ˈsweɪtə"]},
+  {w:"sweaty",         ipa:"ˈsweti",            d:["ˈswiːti",         "ˈsweɪti"]},
+  {w:"sword",          ipa:"sɔːd",              d:["swɔːd",           "sɒd"]},
+  // T
+  {w:"tabloid",        ipa:"ˈtæblɔɪd",          d:["təˈblɔɪd",        "ˈteɪblɔɪd"]},
+  {w:"talk",           ipa:"tɔːk",              d:["tɒlk",            "tɑːk"]},
+  {w:"tan",            ipa:"tʌn",               d:["tɒn",             "tæn"]},
+  {w:"target",         ipa:"ˈtɑːɡɪt",           d:["ˈtɑːdʒɪt",        "ˈtɑːɡɪtʃ"]},
+  {w:"taught",         ipa:"tɔːt",              d:["tɑːf",            "tɒt"]},
+  {w:"tear (noun)",    ipa:"tɪə",               d:["teə",             "tɜː"]},
+  {w:"tenor",          ipa:"ˈtenə",             d:["ˈtiːnə",          "ˈtenɔː"]},
+  {w:"territory",      ipa:"ˈterɪtəri",         d:["təˈrɪtəri",       "ˈterɪtɒri"]},
+  {w:"testimony",      ipa:"ˈtestɪməni",        d:["ˌtestɪˈməni",     "ˈtestɪmɒni"]},
+  {w:"Thames",         ipa:"temz",              d:["θeɪmz",           "teɪmz"]},
+  {w:"thaw",           ipa:"θɔː",               d:["θəʊ",             "θɑː"]},
+  {w:"their",          ipa:"ðeə",               d:["ðeɪ",             "ðɪə"]},
+  {w:"therefore",      ipa:"ˈðeəfɔː",           d:["ðəˈfɔː",          "ˈðeəfəʊ"]},
+  {w:"Theresa",        ipa:"təˈriːzə",          d:["θəˈriːzə",        "tɪˈriːzə"]},
+  {w:"think",          ipa:"θɪŋk",              d:["θɪŋ",             "tɪŋk"]},
+  {w:"Thomas",         ipa:"ˈtɒməs",            d:["ˈθɒməs",          "ˈtɔːməs"]},
+  {w:"thorough",       ipa:"ˈθʌrə",             d:["ˈθɔːrəʊ",         "ˈθʌrəʊ"]},
+  {w:"though",         ipa:"ðəʊ",               d:["θəʊ",             "ðɒ"]},
+  {w:"thought",        ipa:"θɔːt",              d:["θəʊt",            "θɒt"]},
+  {w:"thousand",       ipa:"ˈθaʊzənd",          d:["ˈtaʊzənd",        "ˈθaʊznd"]},
+  {w:"threat",         ipa:"θret",              d:["θriːt",           "tret"]},
+  {w:"through",        ipa:"θruː",              d:["θrəʊ",            "θrʊ"]},
+  {w:"thumb",          ipa:"θʌm",               d:["θʌmb",            "θɒm"]},
+  {w:"thyme",          ipa:"taɪm",              d:["θaɪm",            "tɪm"]},
+  {w:"tomb",           ipa:"tuːm",              d:["tɒmb",            "tʌm"]},
+  {w:"tongue",         ipa:"tʌŋ",               d:["ˈtʌŋɡjuː",        "tɒŋ"]},
+  {w:"tortoise",       ipa:"ˈtɔːtəs",           d:["ˈtɔːtɔɪz",        "ˈtɒtəs"]},
+  {w:"tough",          ipa:"tʌf",               d:["təʊ",             "tɒf"]},
+  {w:"trough",         ipa:"trɒf",              d:["trəʊ",            "trɔːf"]},
+  {w:"tunnel",         ipa:"ˈtʌnl",             d:["ˈtjuːnl",         "ˈtʌnəl"]},
+  {w:"turkey",         ipa:"ˈtɜːki",            d:["ˈtʌrkeɪ",         "ˈtɜːkeɪ"]},
+  {w:"turn",           ipa:"tɜːn",              d:["tʌrn",            "tɔːn"]},
+  {w:"Turner",         ipa:"ˈtɜːnə",            d:["ˈtɑːnə",          "ˈtʌrnə"]},
+  // U
+  {w:"urban",          ipa:"ˈɜːbn",             d:["ˈʌrbən",          "ˈɑːbən"]},
+  {w:"urgent",         ipa:"ˈɜːdʒənt",          d:["ˈɑːdʒənt",        "ˈɜːdʒɪnt"]},
+  // V
+  {w:"variety",        ipa:"vəˈraɪəti",         d:["ˈværɪəti",        "vəˈræɪəti"]},
+  {w:"vegetable",      ipa:"ˈvedʒtəbl",         d:["ˈvedʒəteɪbl",     "ˈvedʒɪtəbl"]},
+  {w:"veranda",        ipa:"vəˈrændə",          d:["ˈverəndə",        "vəˈrɑːndə"]},
+  {w:"veterinary",     ipa:"ˈvetərɪnəri",       d:["vəˈterɪnəri",     "ˈvetərɪneɪri"]},
+  {w:"village",        ipa:"ˈvɪlɪdʒ",           d:["ˈvɪleɪdʒ",        "ˈvɪlɪʒ"]},
+  {w:"vineyard",       ipa:"ˈvɪnjəd",           d:["ˈwaɪnjɑːd",       "ˈvɪnjɑːd"]},
+  {w:"virtual",        ipa:"ˈvɜːtʃʊəl",         d:["ˈviːrtjʊəl",      "ˈvɜːtjʊəl"]},
+  {w:"volcano",        ipa:"vɒlˈkeɪnəʊ",        d:["vɒlˈkɑːnə",       "ˈvɒlkeɪnəʊ"]},
+  {w:"voluntary",      ipa:"ˈvɒləntəri",        d:["vəˈlʌntəri",      "ˈvɒləntɛri"]},
+  // W
+  {w:"wag",            ipa:"wæɡ",               d:["wɒɡ",             "weɪɡ"]},
+  {w:"waggon",         ipa:"ˈwæɡn",             d:["ˈwɒɡn",           "ˈweɪɡən"]},
+  {w:"walk",           ipa:"wɔːk",              d:["wɒlk",            "wɑːk"]},
+  {w:"wander",         ipa:"ˈwɒndə",            d:["ˈwʌndə",          "ˈwɔːndə"]},
+  {w:"ward",           ipa:"wɔːd",              d:["wɑːd",            "wɒd"]},
+  {w:"Warsaw",         ipa:"ˈwɔːsɔː",           d:["ˈwɔːsəʊ",         "ˈwɑːsɔː"]},
+  {w:"water",          ipa:"ˈwɔːtə",            d:["ˈwɒtə",           "ˈwɑːtə"]},
+  {w:"wax",            ipa:"wæks",              d:["wɒks",            "weɪks"]},
+  {w:"wealth",         ipa:"welθ",              d:["wiːlθ",           "welð"]},
+  {w:"weary",          ipa:"ˈwɪəri",            d:["ˈweəri",          "ˈwɜːri"]},
+  {w:"Wednesday",      ipa:"ˈwenzdi",           d:["ˈwendzdeɪ",       "ˈwenzdeɪ"]},
+  {w:"weren't",        ipa:"wɜːnt",             d:["ˈwɜːrənt",        "wɜːrnt"]},
+  {w:"which",          ipa:"wɪtʃ",              d:["wiːtʃ",           "wɪtʃɪ"]},
+  {w:"whose",          ipa:"huːz",              d:["huːs",            "hjuːz"]},
+  {w:"wilderness",     ipa:"ˈwɪldənəs",         d:["ˈwaɪldənəs",      "ˈwɪldɪnəs"]},
+  {w:"wind",           ipa:"waɪnd",             d:["wɪnd",            "wiːnd"]},
+  {w:"wolf",           ipa:"wʊlf",              d:["wɒlf",            "wʌlf"]},
+  {w:"woman",          ipa:"ˈwʊmən",            d:["ˈwɒmən",          "ˈwuːmən"]},
+  {w:"womb",           ipa:"wuːm",              d:["wɒmb",            "wʌm"]},
+  {w:"women",          ipa:"ˈwɪmɪn",            d:["ˈwɒmən",          "ˈwʊmɪn"]},
+  {w:"won",            ipa:"wʌn",               d:["wɒn",             "wəʊn"]},
+  {w:"won't",          ipa:"wəʊnt",             d:["wɒnt",            "wɔːnt"]},
+  {w:"wonder",         ipa:"ˈwʌndə",            d:["ˈwɒndə",          "ˈwɔːndə"]},
+  {w:"Worcester",      ipa:"ˈwʊstə",            d:["ˈwɔːtʃestə",      "ˈwʊstɪə"]},
+  {w:"word",           ipa:"wɜːd",              d:["wɔːd",            "wɑːd"]},
+  {w:"work",           ipa:"wɜːk",              d:["wɔːk",            "wɑːk"]},
+  {w:"world",          ipa:"wɜːld",             d:["wɔːld",           "wɑːld"]},
+  {w:"worry",          ipa:"ˈwʌri",             d:["ˈwɒri",           "ˈwɔːri"]},
+  {w:"worse",          ipa:"wɜːs",              d:["wɔːs",            "wɑːs"]},
+  {w:"worst",          ipa:"wɜːst",             d:["wɔːst",           "wɑːst"]},
+  {w:"worth",          ipa:"wɜːθ",              d:["wɔːθ",            "wɑːθ"]},
+  {w:"wound (injure)", ipa:"wuːnd",             d:["waʊnd",           "wɒnd"]},
+  {w:"wound (wind)",   ipa:"waʊnd",             d:["wʊnd",            "wuːnd"]},
+  {w:"wrath",          ipa:"rɒθ",               d:["rɑːθ",            "ræθ"]},
+  // X
+  {w:"Xerox",          ipa:"ˈzɪərɒks",          d:["ˈkserɒks",        "ˈzɪərɒksi"]},
+  // Y
+  {w:"yacht",          ipa:"jɒt",               d:["jɑːht",           "jɔːt"]},
+  {w:"yolk",           ipa:"jəʊk",              d:["jɒlk",            "jɔːk"]},
+  {w:"youth",          ipa:"juːθ",              d:["jəʊθ",            "jʊθ"]},
+  // Z
+  {w:"zealous",        ipa:"ˈzeləs",            d:["ˈziːləs",         "ˈzɛləs"]},
+];
+  {w:"abominable",    ipa:"əˈbɒmɪnəbl",      d:["əˈbɒmɪneɪbl",   "əˈbɒmɪnɪbl"]},
+  {w:"above",         ipa:"əˈbʌv",            d:["əˈbəʊv",         "əˈbɒv"]},
+  {w:"Abraham",       ipa:"ˈeɪbrəhæm",       d:["ˈæbrəhæm",       "ˈeɪbrəhəm"]},
+  {w:"abroad",        ipa:"əˈbrɔːd",          d:["əˈbrəʊd",        "əˈbrɒd"]},
+  {w:"absurd",        ipa:"əbˈsɜːd",          d:["ˈæbsəd",         "əbˈsɜːrd"]},
+  {w:"accurate",      ipa:"ˈækjʊrət",         d:["ˈækjʊreɪt",      "ˈækjərɪt"]},
+  {w:"ache",          ipa:"eɪk",              d:["eɪtʃ",           "æk"]},
+  {w:"acknowledge",   ipa:"əkˈnɒlɪdʒ",       d:["əkˈnəʊlɪdʒ",     "ˈæknɒlɪdʒ"]},
+  {w:"adequacy",      ipa:"ˈædɪkwəsi",        d:["əˈdɒkwəsi",      "ˈeɪdɪkwəsi"]},
+  {w:"administrative",ipa:"ədˈmɪnɪstrətɪv",  d:["ædmɪˈnɪstrətɪv", "ədˈmɪnɪstreɪtɪv"]},
+  {w:"admirable",     ipa:"ˈædmərəbl",        d:["ədˈmaɪərəbl",    "ˈædmɪrəbl"]},
+  {w:"advantage",     ipa:"ədˈvɑːntɪdʒ",     d:["ədˈvɑːnteɪdʒ",   "ˈædvɑːntɪdʒ"]},
+  {w:"adversary",     ipa:"ˈædvəsəri",        d:["ədˈvɜːsəri",     "ˈædvɜːsəri"]},
+  {w:"advice",        ipa:"ədˈvaɪs",          d:["ˈædvaɪs",        "ədˈveɪs"]},
+  {w:"aircraft",      ipa:"ˈeəkrɑːft",        d:["ˈeɪkrɑːft",      "ˈeəkræft"]},
+  {w:"aisle",         ipa:"aɪl",              d:["eɪl",            "aɪsl"]},
+  {w:"Albert",        ipa:"ˈælbət",           d:["ˈɒlbɜːt",        "ˈælbɜːt"]},
+  {w:"album",         ipa:"ˈælbəm",           d:["ˈɒlbəm",         "ˈeɪlbəm"]},
+  {w:"almond",        ipa:"ˈɑːmənd",          d:["ˈɒlmənd",        "ˈælmənd"]},
+  {w:"amiable",       ipa:"ˈeɪmɪəbl",         d:["ˈæmɪəbl",        "əˈmaɪəbl"]},
+  {w:"among",         ipa:"əˈmʌŋ",            d:["əˈmɒŋ",          "ˈæmʌŋ"]},
+  {w:"anatomy",       ipa:"əˈnætəmi",         d:["ˈænətəmi",       "əˈneɪtəmi"]},
+  {w:"ancient",       ipa:"ˈeɪnʃənt",         d:["ˈænʃənt",        "ˈeɪntʃənt"]},
+  {w:"anecdote",      ipa:"ˈænɪkdəʊt",        d:["ˈænəɡdəʊt",      "ˈænɪkdɒt"]},
+  {w:"angel",         ipa:"ˈeɪndʒl",          d:["ˈændʒəl",        "ˈeɪndʒəl"]},
+  {w:"answer",        ipa:"ˈɑːnsə",           d:["ˈɑːnswə",        "ˈænsə"]},
+  {w:"Anthony",       ipa:"ˈæntəni",          d:["ˈænθəni",        "ˈæntɒni"]},
+  {w:"any",           ipa:"ˈeni",             d:["ˈæni",           "ˈeɪni"]},
+  {w:"appalling",     ipa:"əˈpɔːlɪŋ",         d:["ˈæpəlɪŋ",        "əˈpælɪŋ"]},
+  {w:"appendix",      ipa:"əˈpendɪks",        d:["ˈæpəndɪks",      "əˈpɛndɪks"]},
+  {w:"April",         ipa:"ˈeɪprəl",          d:["ˈæprɪl",         "ˈeɪprɪl"]},
+  {w:"arbitrary",     ipa:"ˈɑːbɪtrəri",       d:["ˌɑːbɪˈtræri",    "ˈɑːbɪtreɪri"]},
+  {w:"area",          ipa:"ˈeərɪə",           d:["əˈrɪə",          "ˈeɪrɪə"]},
+  {w:"aren't",        ipa:"ɑːnt",             d:["ˈɑːrənt",        "ɑːrnt"]},
+  {w:"arena",         ipa:"əˈriːnə",          d:["əˈrenə",         "ˈærɪnə"]},
+  {w:"arithmetic(n)", ipa:"əˈrɪθmətɪk",      d:["ˌærɪθˈmetɪk",    "əˈrɪθmɪtɪk"]},
+  {w:"atom",          ipa:"ˈætəm",            d:["ˈeɪtəm",         "ˈɑːtəm"]},
+  {w:"attentive",     ipa:"əˈtentɪv",         d:["ˈætəntɪv",       "əˈtɛntɪv"]},
+  {w:"attorney",      ipa:"əˈtɜːni",          d:["əˈtɔːni",        "ˈætɜːni"]},
+  {w:"auction",       ipa:"ˈɔːkʃn",           d:["ˈəʊkʃn",         "ˈɒkʃn"]},
+  {w:"aunt",          ipa:"ɑːnt",             d:["aʊnt",           "ænt"]},
+  {w:"author",        ipa:"ˈɔːθə",            d:["ˈəʊθə",          "ˈɑːθə"]},
+  {w:"automobile",    ipa:"ˈɔːtəməbiːl",      d:["ˈəʊtəməbaɪl",    "ˈɔːtəmɒbaɪl"]},
+  {w:"autumn",        ipa:"ˈɔːtəm",           d:["ˈəʊtəm",         "ˈɒtəm"]},
+  {w:"available",     ipa:"əˈveɪləbl",        d:["ˌæveɪˈleɪbl",    "əˈvæləbl"]},
+  {w:"average",       ipa:"ˈævərɪdʒ",         d:["ˈævəreɪdʒ",      "ˈeɪvərɪdʒ"]},
+  {w:"awful",         ipa:"ˈɔːfʊl",           d:["ˈəʊfʊl",         "ˈɑːfʊl"]},
+  // B
+  {w:"balcony",       ipa:"ˈbælkəni",         d:["ˈbɒlkəni",       "ˈbeɪlkəni"]},
+  {w:"basic",         ipa:"ˈbeɪsɪk",          d:["ˈbeɪzɪk",        "ˈbæsɪk"]},
+  {w:"basis",         ipa:"ˈbeɪsɪs",          d:["ˈbæsɪs",         "ˈbeɪzɪs"]},
+  {w:"blood",         ipa:"blʌd",             d:["bluːd",          "blɒd"]},
+  {w:"bomb",          ipa:"bɒm",              d:["bɒmb",           "bʌm"]},
+  {w:"borough",       ipa:"ˈbʌrə",            d:["ˈbɒrəʊ",         "ˈbʌrəʊ"]},
+  {w:"bosom",         ipa:"ˈbʊzəm",           d:["ˈbɒsəm",         "ˈbuːzəm"]},
+  {w:"bough",         ipa:"baʊ",              d:["bəʊ",            "bɔː"]},
+  {w:"bow (bend)",    ipa:"baʊ",              d:["bəʊ",            "bɔː"]},
+  {w:"bowl",          ipa:"bəʊl",             d:["baʊl",           "bɒl"]},
+  {w:"breath",        ipa:"breθ",             d:["briːð",          "breð"]},
+  {w:"breathe",       ipa:"briːð",            d:["breθ",           "briːθ"]},
+  {w:"breeches",      ipa:"ˈbrɪtʃɪz",         d:["ˈbriːtʃɪz",      "ˈbreɪtʃɪz"]},
+  {w:"broad",         ipa:"brɔːd",            d:["brəʊd",          "brɒd"]},
+  {w:"brooch",        ipa:"brəʊtʃ",           d:["bruːtʃ",         "brɔːtʃ"]},
+  {w:"brother",       ipa:"ˈbrʌðə",           d:["ˈbrɒðə",         "ˈbrəʊðə"]},
+  {w:"brought",       ipa:"brɔːt",            d:["brəʊt",          "brɒt"]},
+  {w:"bugle",         ipa:"ˈbjuːɡl",          d:["ˈbʌɡl",          "ˈbjuːɡəl"]},
+  {w:"bull",          ipa:"bʊl",              d:["bʌl",            "buːl"]},
+  {w:"burial",        ipa:"ˈberɪəl",          d:["ˈbɜːrɪəl",       "ˈbʊrɪəl"]},
+  {w:"burn",          ipa:"bɜːn",             d:["bʌrn",           "bɔːn"]},
+  {w:"bury",          ipa:"ˈberi",            d:["ˈbɜːri",         "ˈbʊri"]},
+  {w:"bustle",        ipa:"ˈbʌsl",            d:["ˈbʌstl",         "ˈbʌsəl"]},
+  {w:"butcher",       ipa:"ˈbʊtʃə",           d:["ˈbʌtʃə",         "ˈbuːtʃə"]},
+  // C
+  {w:"cabbage",       ipa:"ˈkæbɪdʒ",          d:["ˈkæbeɪdʒ",       "ˈkæbɪʒ"]},
+  {w:"cabin",         ipa:"ˈkæbɪn",           d:["ˈkeɪbɪn",        "ˈkæbɪən"]},
+  {w:"calf",          ipa:"kɑːf",             d:["kɑːlf",          "kælf"]},
+  {w:"calm",          ipa:"kɑːm",             d:["kɑːlm",          "kælm"]},
+  {w:"castle",        ipa:"ˈkɑːsl",           d:["ˈkɑːstl",        "ˈkæsl"]},
+  {w:"catastrophe",   ipa:"kəˈtæstrəfi",      d:["ˈkætəstrəʊf",    "kəˈtæstrəʊf"]},
+  {w:"cause",         ipa:"kɔːz",             d:["kəʊz",           "kɒz"]},
+  {w:"ceremony",      ipa:"ˈserəməni",        d:["səˈreməni",      "ˈserəmɒni"]},
+  {w:"certain",       ipa:"ˈsɜːtn",           d:["ˈsɜːteɪn",       "ˈsɜːtɪn"]},
+  {w:"certificate",   ipa:"səˈtɪfɪkət",      d:["səˈtɪfɪkeɪt",    "ˈsɜːtɪfɪkət"]},
+  {w:"chalk",         ipa:"tʃɔːk",            d:["tʃɔːlk",         "tʃælk"]},
+  {w:"champagne",     ipa:"ʃæmˈpeɪn",        d:["tʃæmˈpeɪn",      "ʃæmˈpæn"]},
+  {w:"chandelier",    ipa:"ˌʃændəˈlɪə",       d:["ˌtʃændəˈlɪə",    "ˌʃændəˈliːə"]},
+  {w:"chaos",         ipa:"ˈkeɪɒs",           d:["ˈtʃeɪɒs",        "ˈkaɪɒs"]},
+  {w:"characterize",  ipa:"ˈkærəktəraɪz",    d:["kəˈrætəraɪz",    "ˈkærɪktəraɪz"]},
+  {w:"chef",          ipa:"ʃef",              d:["tʃef",           "ʃeɪf"]},
+  {w:"chestnut",      ipa:"ˈtʃesnʌt",         d:["ˈtʃestnʌt",      "ˈtʃesnət"]},
+  {w:"chocolate",     ipa:"ˈtʃɒklət",         d:["ˈtʃɒkleɪt",      "ˈtʃɒkɒlɪt"]},
+  {w:"choir",         ipa:"ˈkwaɪə",           d:["ˈtʃɔɪə",         "ˈkwɑːə"]},
+  {w:"cholera",       ipa:"ˈkɒlərə",          d:["həˈlerə",        "ˈtʃɒlərə"]},
+  {w:"chronic",       ipa:"ˈkrɒnɪk",          d:["ˈhrɒnɪk",        "ˈtʃrɒnɪk"]},
+  {w:"circuit",       ipa:"ˈsɜːkɪt",          d:["ˈsɜːkwɪt",       "ˈsɜːkɪtʃ"]},
+  {w:"cleanliness",   ipa:"ˈklenlɪnəs",       d:["ˈkliːnlɪnəs",    "ˈklenlɪnɪs"]},
+  {w:"climb",         ipa:"klaɪm",            d:["klaɪmb",         "klɪm"]},
+  {w:"clothes",       ipa:"kləʊðz",           d:["ˈkləʊzɪz",       "kləʊθz"]},
+  {w:"cohesive",      ipa:"kəʊˈhiːsɪv",       d:["kəˈhesɪv",       "kəʊˈhɪsɪv"]},
+  {w:"colonel",       ipa:"ˈkɜːnl",           d:["ˈkɒlənəl",       "ˈkɔːnl"]},
+  {w:"column",        ipa:"ˈkɒləm",           d:["ˈkɒləmn",        "ˈkɒljʊm"]},
+  {w:"comb",          ipa:"kəʊm",             d:["kɒmb",           "kʌm"]},
+  {w:"comfort",       ipa:"ˈkʌmfət",          d:["ˈkɒmfət",        "ˈkʌmfɔːt"]},
+  {w:"comfortable",   ipa:"ˈkʌmfətəbl",       d:["kəmˈfɔːtəbl",    "ˈkɒmfətəbl"]},
+  {w:"company",       ipa:"ˈkʌmpəni",         d:["ˈkɒmpəni",       "ˈkʌmpæni"]},
+  {w:"condemn",       ipa:"kənˈdem",          d:["kənˈdemn",       "ˈkɒndem"]},
+  {w:"conquer",       ipa:"ˈkɒŋkə",           d:["ˈkɒŋkwə",        "ˈkɒŋkeə"]},
+  {w:"corps",         ipa:"kɔː",              d:["kɔːps",          "kɒps"]},
+  {w:"cough",         ipa:"kɒf",              d:["kəʊf",           "kɔːf"]},
+  {w:"country",       ipa:"ˈkʌntri",          d:["ˈkaʊntri",       "ˈkɒntri"]},
+  {w:"courage",       ipa:"ˈkʌrɪdʒ",          d:["ˈkʌreɪdʒ",       "ˈkɒrɪdʒ"]},
+  {w:"courteous",     ipa:"ˈkɜːtɪəs",         d:["ˈkɔːtɪəs",       "ˈkɜːtjəs"]},
+  {w:"cover",         ipa:"ˈkʌvə",            d:["ˈkəʊvə",         "ˈkɒvə"]},
+  {w:"cow",           ipa:"kaʊ",              d:["kəʊ",            "kɔː"]},
+  {w:"cupboard",      ipa:"ˈkʌbəd",           d:["ˈkʌpbɔːd",       "ˈkʌpbəd"]},
+  {w:"cushion",       ipa:"ˈkʊʃn",            d:["ˈkʌʃn",          "ˈkuːʃn"]},
+  // D
+  {w:"damage",        ipa:"ˈdæmɪdʒ",          d:["ˈdæmeɪdʒ",       "ˈdeɪmɪdʒ"]},
+  {w:"damn",          ipa:"dæm",              d:["dæmn",           "deɪm"]},
+  {w:"dangerous",     ipa:"ˈdeɪndʒərəs",      d:["ˈdendʒərəs",     "ˈdeɪndʒərɪs"]},
+  {w:"dead",          ipa:"ded",              d:["diːd",           "deɪd"]},
+  {w:"deaf",          ipa:"def",              d:["diːf",           "deɪf"]},
+  {w:"debt",          ipa:"det",              d:["dept",           "dɛbt"]},
+  {w:"delicate",      ipa:"ˈdelɪkət",         d:["ˈdelɪkeɪt",      "ˈdeɪlɪkət"]},
+  {w:"demon",         ipa:"ˈdiːmən",          d:["ˈdemən",         "ˈdɪmən"]},
+  {w:"Derby",         ipa:"ˈdɑːbi",           d:["ˈdɜːbi",         "ˈdɑːbɪ"]},
+  {w:"determine",     ipa:"dɪˈtɜːmɪn",        d:["ˈdetəmaɪn",      "dɪˈtɜːmeɪn"]},
+  {w:"develop",       ipa:"dɪˈveləp",         d:["ˈdevələʊp",      "dɪˈvɛləp"]},
+  {w:"difficult",     ipa:"ˈdɪfɪkəlt",        d:["ˈdɪfɪkʌlt",      "ˈdɪfɪkɪlt"]},
+  {w:"disgust",       ipa:"dɪsˈɡʌst",         d:["dɪzˈɡʌst",       "ˈdɪsɡʌst"]},
+  {w:"dissolve",      ipa:"dɪˈzɒlv",          d:["dɪˈsɒlv",        "ˈdɪzɒlv"]},
+  {w:"don't",         ipa:"dəʊnt",            d:["dɒnt",           "dɔːnt"]},
+  {w:"donkey",        ipa:"ˈdɒŋki",           d:["ˈdʌŋki",         "ˈdɒŋkeɪ"]},
+  {w:"dose",          ipa:"dəʊs",             d:["dəʊz",           "dɒs"]},
+  {w:"doubt",         ipa:"daʊt",             d:["daʊpt",          "dəʊt"]},
+  {w:"dough",         ipa:"dəʊ",              d:["daʊ",            "duː"]},
+  {w:"dove",          ipa:"dʌv",              d:["dəʊv",           "dɒv"]},
+  {w:"dozen",         ipa:"ˈdʌzn",            d:["ˈdəʊzn",         "ˈdɒzn"]},
+  {w:"drought",       ipa:"draʊt",            d:["drɑːft",         "drəʊt"]},
+  // E
+  {w:"ear",           ipa:"ɪə",               d:["eə",             "ɜː"]},
+  {w:"early",         ipa:"ˈɜːli",            d:["ˈiːrli",         "ˈɑːli"]},
+  {w:"economic",      ipa:"ˌiːkəˈnɒmɪk",     d:["ɪˈkɒnəmɪk",      "ˌekəˈnɒmɪk"]},
+  {w:"Edinburgh",     ipa:"ˈedɪnbrə",         d:["ˈedɪnbɜːɡ",      "ˈedɪnbərɒ"]},
+  {w:"effort",        ipa:"ˈefət",            d:["əˈfɔːt",         "ˈɛfɔːt"]},
+  {w:"enormous",      ipa:"ɪˈnɔːməs",         d:["ɪˈnɔːməʊs",      "ˈenɔːməs"]},
+  {w:"entrance",      ipa:"ˈentrəns",         d:["əˈtrɑːns",       "ˈɒntrəns"]},
+  // F
+  {w:"falcon",        ipa:"ˈfɔːlkən",         d:["ˈfælkən",        "ˈfɔːkən"]},
+  {w:"fault",         ipa:"fɔːlt",            d:["fəʊlt",          "fɒlt"]},
+  {w:"favourite",     ipa:"ˈfeɪvərɪt",        d:["ˈfævərɪt",       "ˈfeɪvəreɪt"]},
+  {w:"feather",       ipa:"ˈfeðə",            d:["ˈfiːðə",         "ˈfeɪðə"]},
+  {w:"field",         ipa:"fiːld",            d:["fɪld",           "feɪld"]},
+  {w:"flood",         ipa:"flʌd",             d:["fluːd",          "flɒd"]},
+  {w:"folk",          ipa:"fəʊk",             d:["fɒlk",           "fɔːk"]},
+  {w:"foreign",       ipa:"ˈfɒrən",           d:["fɒˈreɪn",        "ˈfɔːrɪn"]},
+  {w:"front",         ipa:"frʌnt",            d:["frɒnt",          "frəʊnt"]},
+  {w:"fruit",         ipa:"fruːt",            d:["frʊt",           "frəʊt"]},
+  // G
+  {w:"garage",        ipa:"ˈɡærɑːdʒ",         d:["ɡəˈreɪdʒ",       "ˈɡæreɪdʒ"]},
+  {w:"gauge",         ipa:"ɡeɪdʒ",            d:["ɡɔːdʒ",          "ɡeɪʒ"]},
+  {w:"glove",         ipa:"ɡlʌv",             d:["ɡləʊv",          "ɡlɒv"]},
+  {w:"gooseberry",    ipa:"ˈɡʊzbəri",         d:["ˈɡʊsbəri",       "ˈɡuːzbəri"]},
+  {w:"Greenwich",     ipa:"ˈɡrenɪtʃ",         d:["ˈɡriːnɪtʃ",      "ˈɡrenɪdʒ"]},
+  {w:"guitar",        ipa:"ɡɪˈtɑː",           d:["ˈɡiːtə",         "ɡɪˈtɑːr"]},
+  // H
+  {w:"half",          ipa:"hɑːf",             d:["hɑːlf",          "hæf"]},
+  {w:"handkerchief",  ipa:"ˈhæŋkətʃɪf",       d:["ˈhændkətʃɪf",    "ˈhæŋkətʃiːf"]},
+  {w:"handsome",      ipa:"ˈhænsəm",          d:["ˈhændsəm",       "ˈhænsɒm"]},
+  {w:"haunt",         ipa:"hɔːnt",            d:["haʊnt",          "hɑːnt"]},
+  {w:"health",        ipa:"helθ",             d:["hiːlθ",          "helð"]},
+  {w:"heard",         ipa:"hɜːd",             d:["hɪəd",           "hɑːd"]},
+  {w:"hearth",        ipa:"hɑːθ",             d:["hɪəθ",           "hɑːð"]},
+  {w:"height",        ipa:"haɪt",             d:["heɪt",           "hɪt"]},
+  {w:"heir",          ipa:"eə",               d:["heə",            "ɪə"]},
+  {w:"hiccough",      ipa:"ˈhɪkʌp",           d:["ˈhɪkəʊf",        "ˈhɪkɒp"]},
+  {w:"holy",          ipa:"ˈhəʊli",           d:["ˈhɒli",          "ˈhɔːli"]},
+  {w:"honest",        ipa:"ˈɒnɪst",           d:["ˈəʊnəst",        "ˈhɒnɪst"]},
+  {w:"honey",         ipa:"ˈhʌni",            d:["ˈhʌneɪ",         "ˈhɒni"]},
+  {w:"honour",        ipa:"ˈɒnə",             d:["ˈhɒnə",          "ˈɔːnə"]},
+  {w:"houses",        ipa:"ˈhaʊzɪz",          d:["ˈhaʊsɪz",        "ˈhaʊzɪs"]},
+  {w:"hurt",          ipa:"hɜːt",             d:["hʌrt",           "hɔːt"]},
+  {w:"hymn",          ipa:"hɪm",              d:["hɪmn",           "haɪm"]},
+  // I
+  {w:"image",         ipa:"ˈɪmɪdʒ",           d:["ɪˈmeɪdʒ",        "ˈɪmɪʒ"]},
+  {w:"industry",      ipa:"ˈɪndəstri",        d:["ɪnˈdʌstri",      "ˈɪnduːstri"]},
+  {w:"infamous",      ipa:"ˈɪnfəməs",         d:["ɪnˈfeɪməs",      "ˈɪnfæməs"]},
+  {w:"iron",          ipa:"ˈaɪən",            d:["ˈaɪrən",         "ˈɪərən"]},
+  {w:"island",        ipa:"ˈaɪlənd",          d:["ˈaɪslənd",       "ˈɪlənd"]},
+  // J
+  {w:"Japan",         ipa:"dʒəˈpæn",          d:["ˈdʒæpən",        "dʒəˈpɑːn"]},
+  {w:"jealous",       ipa:"ˈdʒeləs",          d:["ˈdʒɜːləs",       "ˈdʒɛləs"]},
+  {w:"journey",       ipa:"ˈdʒɜːni",          d:["ˈdʒɔːneɪ",       "ˈdʒɜːneɪ"]},
+  {w:"jury",          ipa:"ˈdʒʊəri",          d:["ˈdʒʊri",         "ˈdʒɜːri"]},
+  // K
+  {w:"key",           ipa:"kiː",              d:["keɪ",            "kɪ"]},
+  {w:"knowledge",     ipa:"ˈnɒlɪdʒ",          d:["ˈnəʊlɪdʒ",       "ˈnɒlɪdʒɪ"]},
+  {w:"known",         ipa:"nəʊn",             d:["naʊn",           "nɒn"]},
+  // L
+  {w:"lamb",          ipa:"læm",              d:["læmb",           "lɑːm"]},
+  {w:"law",           ipa:"lɔː",              d:["ləʊ",            "lɑː"]},
+  {w:"lead (n.)",     ipa:"led",              d:["liːd",           "leɪd"]},
+  {w:"lead (v.)",     ipa:"liːd",             d:["led",            "leɪd"]},
+  {w:"legend",        ipa:"ˈledʒənd",         d:["ˈleɡənd",        "ˈliːdʒənd"]},
+  {w:"Leicester",     ipa:"ˈlestə",           d:["ˈleɪtʃəstə",     "ˈlɛstɪə"]},
+  {w:"Leonard",       ipa:"ˈlenəd",           d:["ˈlɪənɑːd",       "ˈlenɑːd"]},
+  {w:"leopard",       ipa:"ˈlepəd",           d:["ˈlɪəpɑːd",       "ˈlepɑːd"]},
+  {w:"lettuce",       ipa:"ˈletɪs",           d:["ˈletjʊs",        "ˈletuːs"]},
+  {w:"lieutenant",    ipa:"lefˈtenənt",       d:["ˈlɔɪtənənt",     "ljuːˈtenənt"]},
+  {w:"limb",          ipa:"lɪm",              d:["lɪmb",           "laɪm"]},
+  {w:"loose",         ipa:"luːs",             d:["luːz",           "lʊs"]},
+  {w:"lose",          ipa:"luːz",             d:["ləʊz",           "lʊz"]},
+  // M
+  {w:"mausoleum",     ipa:"ˌmɒsəˈliːəm",      d:["ˌmɒzəˈliːəm",    "ˌmɒsəˈlɪəm"]},
+  {w:"meadow",        ipa:"ˈmedəʊ",           d:["ˈmiːdəʊ",        "ˈmeɪdəʊ"]},
+  {w:"medium",        ipa:"ˈmiːdɪəm",         d:["ˈmedɪəm",        "ˈmiːdjəm"]},
+  {w:"message",       ipa:"ˈmesɪdʒ",          d:["məˈseɪdʒ",       "ˈmesɪʒ"]},
+  {w:"minute (adj.)", ipa:"maɪˈnjuːt",        d:["ˈmɪnɪt",         "maɪˈnjuːt"]},
+  {w:"mischief",      ipa:"ˈmɪstʃɪf",         d:["mɪsˈtʃiːf",      "ˈmɪstʃiːf"]},
+  {w:"monk",          ipa:"mʌŋk",             d:["mɒŋk",           "mʊŋk"]},
+  {w:"monkey",        ipa:"ˈmʌŋki",           d:["ˈmʌŋkeɪ",        "ˈmɒŋki"]},
+  {w:"muscle",        ipa:"ˈmʌsl",            d:["ˈmʌskl",         "ˈmʌsəl"]},
+  // N
+  {w:"neon",          ipa:"ˈniːɒn",           d:["ˈnɪən",          "ˈneɪɒn"]},
+  {w:"necessary",     ipa:"ˈnesɪsəri",        d:["nəˈsesəri",      "ˈnesɪsɛri"]},
+  {w:"nestle",        ipa:"ˈnesl",            d:["ˈnestl",         "ˈnɛzl"]},
+  {w:"nurse",         ipa:"nɜːs",             d:["nʌrs",           "nɔːs"]},
+  // O
+  {w:"onion",         ipa:"ˈʌnjən",           d:["ˈɒnɪən",         "ˈʌnjɒn"]},
+  {w:"only",          ipa:"ˈəʊnli",           d:["ˈɒnli",          "ˈɔːnli"]},
+  {w:"other",         ipa:"ˈʌðə",             d:["ˈɒðə",           "ˈəʊðə"]},
+  {w:"oven",          ipa:"ˈʌvn",             d:["ˈɒvn",           "ˈəʊvn"]},
+  {w:"own",           ipa:"əʊn",              d:["aʊn",            "ɒn"]},
+  // P
+  {w:"palm",          ipa:"pɑːm",             d:["pɑːlm",          "pælm"]},
+  {w:"passage",       ipa:"ˈpæsɪdʒ",          d:["ˈpæseɪdʒ",       "ˈpɑːsɪdʒ"]},
+  {w:"patron",        ipa:"ˈpeɪtrən",         d:["ˈpætrən",        "ˈpeɪtrɒn"]},
+  {w:"peasant",       ipa:"ˈpeznt",           d:["ˈpiːznt",        "ˈpɛzənt"]},
+  {w:"phlegm",        ipa:"flem",             d:["fleɡm",          "fliːm"]},
+  {w:"pint",          ipa:"paɪnt",            d:["pɪnt",           "piːnt"]},
+  {w:"plait",         ipa:"plæt",             d:["pleɪt",          "plɑːt"]},
+  {w:"plough",        ipa:"plaʊ",             d:["pləʊ",           "plɒf"]},
+  {w:"private",       ipa:"ˈpraɪvət",         d:["ˈpraɪveɪt",      "ˈprɪvət"]},
+  {w:"process",       ipa:"ˈprəʊses",         d:["prəʊˈses",       "ˈprɒses"]},
+  {w:"protein",       ipa:"ˈprəʊtiːn",        d:["prəˈteɪn",       "ˈprɒtɪn"]},
+  {w:"psalm",         ipa:"sɑːm",             d:["psɑːlm",         "sælm"]},
+  {w:"pudding",       ipa:"ˈpʊdɪŋ",           d:["ˈpʌdɪŋ",         "ˈpuːdɪŋ"]},
+  // Q
+  {w:"quay",          ipa:"kiː",              d:["kweɪ",           "keɪ"]},
+  // R
+  {w:"raspberry",     ipa:"ˈrɑːzbəri",        d:["ˈrɑːspbəri",     "ˈræzbəri"]},
+  {w:"ration",        ipa:"ˈræʃn",            d:["ˈreɪʃn",         "ˈrɑːʃn"]},
+  {w:"rational",      ipa:"ˈræʃənl",          d:["ˈreɪʃənl",       "ˈrɑːʃənl"]},
+  {w:"receipt",       ipa:"rɪˈsiːt",          d:["rɪˈsiːpt",       "ˈriːsiːt"]},
+  {w:"rhythm",        ipa:"ˈrɪðəm",           d:["ˈrɪθm",          "ˈrɪðm"]},
+  {w:"ruin",          ipa:"ˈrʊɪn",            d:["ˈrʌɪn",          "ruːɪn"]},
+  // S
+  {w:"said",          ipa:"sed",              d:["seɪd",           "sɛd"]},
+  {w:"salmon",        ipa:"ˈsæmən",           d:["ˈsɑːlmən",       "ˈsælmən"]},
+  {w:"satire",        ipa:"ˈsætaɪə",          d:["səˈtaɪə",        "ˈseɪtaɪə"]},
+  {w:"sausage",       ipa:"ˈsɒsɪdʒ",          d:["ˈsəʊseɪdʒ",      "ˈsɔːsɪdʒ"]},
+  {w:"says",          ipa:"sez",              d:["seɪz",           "sɛz"]},
+  {w:"separate (adj)",ipa:"ˈseprət",          d:["ˈsepəreɪt",      "ˈsepərɪt"]},
+  {w:"sergeant",      ipa:"ˈsɑːdʒənt",        d:["ˈsɜːdʒənt",      "ˈsɑːdʒɪnt"]},
+  {w:"shepherd",      ipa:"ˈʃepəd",           d:["ˈʃefəd",         "ˈʃepɑːd"]},
+  {w:"shoe",          ipa:"ʃuː",              d:["ʃəʊ",            "ʃɪ"]},
+  {w:"shone",         ipa:"ʃɒn",              d:["ʃəʊn",           "ʃɔːn"]},
+  {w:"shove",         ipa:"ʃʌv",              d:["ʃəʊv",           "ʃɒv"]},
+  {w:"sieve",         ipa:"sɪv",              d:["siːv",           "sɪvɪ"]},
+  {w:"solemn",        ipa:"ˈsɒləm",           d:["ˈsɒləmn",        "ˈsɒlɪm"]},
+  {w:"soup",          ipa:"suːp",             d:["səʊp",           "sʊp"]},
+  {w:"southern",      ipa:"ˈsʌðən",           d:["ˈsaʊðən",        "ˈsɒðən"]},
+  {w:"steak",         ipa:"steɪk",            d:["stiːk",          "stɛk"]},
+  {w:"subtle",        ipa:"ˈsʌtl",            d:["ˈsʌbtl",         "ˈsʌtəl"]},
+  {w:"sweat",         ipa:"swet",             d:["swiːt",          "sweɪt"]},
+  {w:"sword",         ipa:"sɔːd",             d:["swɔːd",          "sɒd"]},
+  // T
+  {w:"talk",          ipa:"tɔːk",             d:["tɒlk",           "tɑːk"]},
+  {w:"Thames",        ipa:"temz",             d:["θeɪmz",          "teɪmz"]},
+  {w:"thorough",      ipa:"ˈθʌrə",            d:["ˈθɔːrəʊ",        "ˈθʌrəʊ"]},
+  {w:"though",        ipa:"ðəʊ",              d:["θəʊ",            "ðɒ"]},
+  {w:"thought",       ipa:"θɔːt",             d:["θəʊt",           "θɒt"]},
+  {w:"thousand",      ipa:"ˈθaʊzənd",         d:["ˈtaʊzənd",       "ˈθaʊznd"]},
+  {w:"through",       ipa:"θruː",             d:["θrəʊ",           "θrʊ"]},
+  {w:"thumb",         ipa:"θʌm",              d:["θʌmb",           "θɒm"]},
+  {w:"thyme",         ipa:"taɪm",             d:["θaɪm",           "tɪm"]},
+  {w:"tomb",          ipa:"tuːm",             d:["tɒmb",           "tʌm"]},
+  {w:"tongue",        ipa:"tʌŋ",              d:["ˈtʌŋɡjuː",       "tɒŋ"]},
+  {w:"tortoise",      ipa:"ˈtɔːtəs",          d:["ˈtɔːtɔɪz",       "ˈtɒtəs"]},
+  {w:"tough",         ipa:"tʌf",              d:["təʊ",            "tɒf"]},
+  {w:"turkey",        ipa:"ˈtɜːki",           d:["ˈtʌrkeɪ",        "ˈtɜːkeɪ"]},
+  {w:"turn",          ipa:"tɜːn",             d:["tʌrn",           "tɔːn"]},
+  // V
+  {w:"village",       ipa:"ˈvɪlɪdʒ",          d:["ˈvɪleɪdʒ",       "ˈvɪlɪʒ"]},
+  {w:"vineyard",      ipa:"ˈvɪnjəd",          d:["ˈwaɪnjɑːd",      "ˈvɪnjɑːd"]},
+  // W
+  {w:"walk",          ipa:"wɔːk",             d:["wɒlk",           "wɑːk"]},
+  {w:"wander",        ipa:"ˈwɒndə",           d:["ˈwʌndə",         "ˈwɔːndə"]},
+  {w:"water",         ipa:"ˈwɔːtə",           d:["ˈwɒtə",          "ˈwɑːtə"]},
+  {w:"Wednesday",     ipa:"ˈwenzdi",          d:["ˈwendzdeɪ",      "ˈwenzdeɪ"]},
+  {w:"wolf",          ipa:"wʊlf",             d:["wɒlf",           "wʌlf"]},
+  {w:"woman",         ipa:"ˈwʊmən",           d:["ˈwɒmən",         "ˈwuːmən"]},
+  {w:"womb",          ipa:"wuːm",             d:["wɒmb",           "wʌm"]},
+  {w:"women",         ipa:"ˈwɪmɪn",           d:["ˈwɒmən",         "ˈwʊmɪn"]},
+  {w:"won",           ipa:"wʌn",              d:["wɒn",            "wəʊn"]},
+  {w:"won't",         ipa:"wəʊnt",            d:["wɒnt",           "wɔːnt"]},
+  {w:"wonder",        ipa:"ˈwʌndə",           d:["ˈwɒndə",         "ˈwɔːndə"]},
+  {w:"Worcester",     ipa:"ˈwʊstə",           d:["ˈwɔːtʃestə",     "ˈwʊstɪə"]},
+  {w:"word",          ipa:"wɜːd",             d:["wɔːd",           "wɑːd"]},
+  {w:"work",          ipa:"wɜːk",             d:["wɔːk",           "wɑːk"]},
+  {w:"world",         ipa:"wɜːld",            d:["wɔːld",          "wɑːld"]},
+  {w:"worry",         ipa:"ˈwʌri",            d:["ˈwɒri",          "ˈwɔːri"]},
+  {w:"worse",         ipa:"wɜːs",             d:["wɔːs",           "wɑːs"]},
+  {w:"wrath",         ipa:"rɒθ",              d:["rɑːθ",           "ræθ"]},
+  // Y
+  {w:"yacht",         ipa:"jɒt",              d:["jɑːht",          "jɔːt"]},
+  {w:"yolk",          ipa:"jəʊk",             d:["jɒlk",           "jɔːk"]},
+  {w:"youth",         ipa:"juːθ",             d:["jəʊθ",           "jʊθ"]},
+  // Z
+  {w:"zealous",       ipa:"ˈzeləs",           d:["ˈziːləs",        "ˈzɛləs"]},
+];
+
+// Stress data: word, syllables array, correct index (0-based)
+const stressBank = [
+  {w:"characterize", syls:["cha","rac","te","rize"], ans:0},
+  {w:"satire", syls:["sa","tire"], ans:0},
+  {w:"therefore", syls:["there","fore"], ans:0},
+  {w:"infamous", syls:["in","fa","mous"], ans:0},
+  {w:"arithmetic (n.)", syls:["a","rith","me","tic"], ans:1},
+  {w:"admirable", syls:["ad","mi","ra","ble"], ans:0},
+  {w:"adversary", syls:["ad","ver","sa","ry"], ans:0},
+  {w:"arbitrary", syls:["ar","bi","tra","ry"], ans:0},
+  {w:"ceremony", syls:["cer","e","mo","ny"], ans:0},
+  {w:"comfortable", syls:["com","for","ta","ble"], ans:0},
+  {w:"demonstrate", syls:["dem","on","strate"], ans:0},
+  {w:"economy", syls:["e","con","o","my"], ans:1},
+  {w:"geography", syls:["ge","og","ra","phy"], ans:1},
+  {w:"geometry", syls:["ge","om","e","try"], ans:1},
+  {w:"industry", syls:["in","dus","try"], ans:0},
+  {w:"inventory", syls:["in","ven","to","ry"], ans:0},
+  {w:"necessary", syls:["nec","es","sa","ry"], ans:0},
+  {w:"veterinary", syls:["vet","er","i","na","ry"], ans:0},
+  {w:"university", syls:["u","ni","ver","si","ty"], ans:2},
+  {w:"international", syls:["in","ter","na","tion","al"], ans:2},
+  {w:"metropolitan", syls:["met","ro","pol","i","tan"], ans:2},
+  {w:"photography", syls:["pho","tog","ra","phy"], ans:1},
+  {w:"biology", syls:["bi","ol","o","gy"], ans:1},
+  {w:"analysis", syls:["a","nal","y","sis"], ans:1},
+  {w:"catastrophe", syls:["ca","tas","tro","phe"], ans:1},
+];
+
+// For task 3 — use pre-written misleading distractors
+function makeCircleItem(item) {
+  const opts = shuffle([item.ipa, item.d[0], item.d[1]]);
+  return { w: item.w, opts, ans: opts.indexOf(item.ipa) };
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function pick(arr, n) { return shuffle(arr).slice(0, n); }
+
+// ===================== STATE =====================
+let t1Items=[], t2Items=[], t3Items=[], t4Items=[];
+let scores = {t1:0,t2:0,t3:0,t4:0};
+let checked = {t1:false,t2:false,t3:false,t4:false};
+
+// ===================== INIT =====================
+function initTask1() {
+  t1Items = pick(wordBank, 10);
+  const tbody = document.getElementById('t1-body');
+  tbody.innerHTML = '';
+  t1Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="no-cell">${i+1}.</td>
+      <td class="spelling-cell">${item.w.toUpperCase()}</td>
+      <td class="input-cell">
+        <input class="phon-input" id="t1i${i}" type="text" placeholder="/" autocomplete="off" spellcheck="false">
+        <div class="answer-hint" id="t1h${i}"></div>
+      </td>`;
+    tbody.appendChild(tr);
+    const inp = document.getElementById(`t1i${i}`);
+    inp.addEventListener('input', () => updateProg1());
+    inp.addEventListener('focus', () => setActiveInput(`t1i${i}`));
+  });
+  document.getElementById('prog1').style.width = '0%';
+  const rb = document.getElementById('res1');
+  rb.classList.remove('show');
+  checked.t1 = false;
+}
+
+function initTask2() {
+  t2Items = pick(stressBank, 8);
+  const tbody = document.getElementById('t2-body');
+  tbody.innerHTML = '';
+  t2Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    const sylsHtml = item.syls.map((s,j) =>
+      `<button class="syl-btn" id="t2s${i}_${j}" onclick="selectSyl(${i},${j})">${s.toUpperCase()}</button>`
+    ).join('');
+    tr.innerHTML = `
+      <td class="no-cell" style="width:30px">${i+1}.</td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;width:200px">${item.w.toUpperCase()}</td>
+      <td><div class="syllables">${sylsHtml}</div></td>`;
+    tbody.appendChild(tr);
+  });
+  t2Items._selected = new Array(t2Items.length).fill(null);
+  document.getElementById('prog2').style.width = '0%';
+  document.getElementById('res2').classList.remove('show');
+  checked.t2 = false;
+}
+
+function initTask3() {
+  const pool = pick(wordBank, 8);
+  t3Items = pool.map(makeCircleItem);
+  const tbody = document.getElementById('t3-body');
+  tbody.innerHTML = '';
+  t3Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    const optsHtml = item.opts.map((o,j) =>
+      `<button class="option-btn" id="t3o${i}_${j}" onclick="selectOpt(${i},${j})">/${o}/</button>`
+    ).join('');
+    tr.innerHTML = `
+      <td class="no-cell">${i+1}.</td>
+      <td style="font-weight:700;font-family:'Syne',sans-serif;">${item.w.toUpperCase()}</td>
+      ${item.opts.map((o,j) => `<td><button class="option-btn" id="t3o${i}_${j}" onclick="selectOpt(${i},${j})">/${o}/</button></td>`).join('')}`;
+    tbody.appendChild(tr);
+  });
+  t3Items._selected = new Array(t3Items.length).fill(null);
+  document.getElementById('prog3').style.width = '0%';
+  document.getElementById('res3').classList.remove('show');
+  checked.t3 = false;
+}
+
+function initTask4() {
+  t4Items = pick(wordBank, 8);
+  const tbody = document.getElementById('t4-body');
+  tbody.innerHTML = '';
+  t4Items.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="no-cell">${i+1}.</td>
+      <td class="ipa-cell">/${item.ipa}/</td>
+      <td><input class="spell-input" id="t4i${i}" type="text" placeholder="write the word..." autocomplete="off" spellcheck="false">
+      <div class="answer-hint" id="t4h${i}"></div></td>`;
+    tbody.appendChild(tr);
+    document.getElementById(`t4i${i}`).addEventListener('input', () => updateProg4());
+  });
+  document.getElementById('prog4').style.width = '0%';
+  document.getElementById('res4').classList.remove('show');
+  checked.t4 = false;
+}
+
+// ===================== INTERACTIONS =====================
+function selectSyl(row, col) {
+  if (checked.t2) return;
+  t2Items._selected[row] = col;
+  t2Items[row].syls.forEach((_,j) => {
+    const btn = document.getElementById(`t2s${row}_${j}`);
+    btn.classList.toggle('selected', j===col);
+  });
+  updateProg2();
+}
+
+function selectOpt(row, col) {
+  if (checked.t3) return;
+  t3Items._selected[row] = col;
+  t3Items[row].opts.forEach((_,j) => {
+    const btn = document.getElementById(`t3o${row}_${j}`);
+    btn.classList.toggle('selected', j===col);
+  });
+  updateProg3();
+}
+
+// ===================== PROGRESS =====================
+function updateProg1() {
+  const filled = t1Items.filter((_,i) => document.getElementById(`t1i${i}`).value.trim()).length;
+  document.getElementById('prog1').style.width = (filled/t1Items.length*100)+'%';
+}
+function updateProg2() {
+  const filled = t2Items._selected.filter(x=>x!==null).length;
+  document.getElementById('prog2').style.width = (filled/t2Items.length*100)+'%';
+}
+function updateProg3() {
+  const filled = t3Items._selected.filter(x=>x!==null).length;
+  document.getElementById('prog3').style.width = (filled/t3Items.length*100)+'%';
+}
+function updateProg4() {
+  const filled = t4Items.filter((_,i) => document.getElementById(`t4i${i}`).value.trim()).length;
+  document.getElementById('prog4').style.width = (filled/t4Items.length*100)+'%';
+}
+
+// ===================== CHECK =====================
+function normalize(s) { return s.replace(/[\/ˈˌ\s]/g,'').toLowerCase(); }
+
+function checkTask1() {
+  let correct = 0;
+  t1Items.forEach((item,i) => {
+    const inp = document.getElementById(`t1i${i}`);
+    const hint = document.getElementById(`t1h${i}`);
+    const val = normalize(inp.value);
+    const ans = normalize(item.ipa);
+    if (val === ans) {
+      inp.classList.add('correct'); inp.classList.remove('wrong');
+      hint.className='answer-hint correct show'; hint.textContent='✓ Poprawnie!';
+      correct++;
+    } else {
+      inp.classList.add('wrong'); inp.classList.remove('correct');
+      hint.className='answer-hint wrong show'; hint.textContent=`✗ Poprawna: /${item.ipa}/`;
+    }
+  });
+  showResult('res1', correct, t1Items.length);
+  checked.t1 = true;
+  document.getElementById('prog1').style.width='100%';
+}
+
+function checkTask2() {
+  let correct = 0;
+  t2Items.forEach((item,i) => {
+    const sel = t2Items._selected[i];
+    item.syls.forEach((_,j) => {
+      const btn = document.getElementById(`t2s${i}_${j}`);
+      btn.classList.remove('selected','correct-ans','wrong-ans');
+      if (j === item.ans) btn.classList.add('correct-ans');
+      else if (j === sel && sel !== item.ans) btn.classList.add('wrong-ans');
+    });
+    if (sel === item.ans) correct++;
+  });
+  showResult('res2', correct, t2Items.length);
+  checked.t2 = true;
+}
+
+function checkTask3() {
+  let correct = 0;
+  t3Items.forEach((item,i) => {
+    const sel = t3Items._selected[i];
+    item.opts.forEach((_,j) => {
+      const btn = document.getElementById(`t3o${i}_${j}`);
+      btn.classList.remove('selected','correct-ans','wrong-ans');
+      if (j === item.ans) btn.classList.add('correct-ans');
+      else if (j === sel && sel !== item.ans) btn.classList.add('wrong-ans');
+    });
+    if (sel === item.ans) correct++;
+  });
+  showResult('res3', correct, t3Items.length);
+  checked.t3 = true;
+}
+
+function checkTask4() {
+  let correct = 0;
+  t4Items.forEach((item,i) => {
+    const inp = document.getElementById(`t4i${i}`);
+    const hint = document.getElementById(`t4h${i}`);
+    const val = inp.value.trim().toLowerCase();
+    const ans = item.w.toLowerCase();
+    if (val === ans) {
+      inp.classList.add('correct'); inp.classList.remove('wrong');
+      hint.className='answer-hint correct show'; hint.textContent='✓ Poprawnie!';
+      correct++;
+    } else {
+      inp.classList.add('wrong'); inp.classList.remove('correct');
+      hint.className='answer-hint wrong show'; hint.textContent=`✗ Poprawna: ${item.w}`;
+    }
+  });
+  showResult('res4', correct, t4Items.length);
+  checked.t4 = true;
+  document.getElementById('prog4').style.width='100%';
+}
+
+function revealTask1() {
+  t1Items.forEach((item,i) => {
+    const inp = document.getElementById(`t1i${i}`);
+    const hint = document.getElementById(`t1h${i}`);
+    inp.value = '/'+item.ipa+'/';
+    inp.classList.add('correct'); inp.classList.remove('wrong');
+    hint.className='answer-hint correct show'; hint.textContent='(pokazana odpowiedź)';
+  });
+}
+
+function revealTask4() {
+  t4Items.forEach((item,i) => {
+    const inp = document.getElementById(`t4i${i}`);
+    const hint = document.getElementById(`t4h${i}`);
+    inp.value = item.w;
+    inp.classList.add('correct'); inp.classList.remove('wrong');
+    hint.className='answer-hint correct show'; hint.textContent='(pokazana odpowiedź)';
+  });
+}
+
+function showResult(id, correct, total) {
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  const pct = Math.round(correct/total*100);
+  let grade, color;
+  if (pct >= 90) { grade="5 — Świetnie! 🎉"; color="var(--correct)"; }
+  else if (pct >= 75) { grade="4 — Dobrze! 👍"; color="var(--accent)"; }
+  else if (pct >= 60) { grade="3 — Wystarczy ✓"; color="var(--accent3)"; }
+  else { grade="2 — Ćwicz więcej 💪"; color="var(--accent2)"; }
+  el.innerHTML = `
+    <div class="result-score"><span class="pts" style="color:${color}">${correct}/${total} pkt</span> &nbsp;${pct}%</div>
+    <div class="result-msg">${grade}</div>`;
+  updateGlobalScore();
+}
+
+function updateGlobalScore() {
+  // not tracking across panels in this version – just show last
+}
+
+// ===================== IPA KEYBOARD =====================
+let activeInputId = null;
+
+function toggleKeyboard() {
+  const kb = document.getElementById('ipa-keyboard');
+  const btn = document.getElementById('kb-toggle');
+  const visible = kb.classList.toggle('visible');
+  btn.classList.toggle('on', visible);
+  btn.textContent = visible ? '⌨ UKRYJ KLAWIATURĘ IPA' : '⌨ POKAŻ KLAWIATURĘ IPA';
+}
+
+function setActiveInput(id) {
+  activeInputId = id;
+  const label = document.getElementById('kb-active-label');
+  if (label) {
+    const inp = document.getElementById(id);
+    const idx = id.replace('t1i','');
+    label.textContent = t1Items[idx] ? `aktywne: ${t1Items[idx].w}` : id;
+  }
+}
+
+function insertIPA(sym) {
+  if (!activeInputId) return;
+  const inp = document.getElementById(activeInputId);
+  if (!inp) return;
+  const start = inp.selectionStart;
+  const end = inp.selectionEnd;
+  const val = inp.value;
+  inp.value = val.slice(0, start) + sym + val.slice(end);
+  inp.selectionStart = inp.selectionEnd = start + sym.length;
+  inp.focus();
+  updateProg1();
+}
+
+function deleteIPA() {
+  if (!activeInputId) return;
+  const inp = document.getElementById(activeInputId);
+  if (!inp) return;
+  const start = inp.selectionStart;
+  const end = inp.selectionEnd;
+  if (start === end && start > 0) {
+    inp.value = inp.value.slice(0, start-1) + inp.value.slice(start);
+    inp.selectionStart = inp.selectionEnd = start - 1;
+  } else if (start !== end) {
+    inp.value = inp.value.slice(0, start) + inp.value.slice(end);
+    inp.selectionStart = inp.selectionEnd = start;
+  }
+  inp.focus();
+  updateProg1();
+}
+
+// ===================== RESET =====================
+function resetTask1() { initTask1(); }
+function resetTask2() { initTask2(); }
+function resetTask3() { initTask3(); }
+function resetTask4() { initTask4(); }
+
+// ===================== TABS =====================
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n));
+}
+
+// ===================== BOOT =====================
+initTask1(); initTask2(); initTask3(); initTask4();
+</script>
+</body>
+</html>
